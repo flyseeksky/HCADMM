@@ -21,3 +21,15 @@ def test_hyper_adj():
     assert np.all(B == C)
     assert np.all(B1 == A)
     assert np.all(B2 == C2)
+
+
+def test_nodetoedgelist():
+    A = np.array([[1, 0, 0, 0],
+                  [1, 1, 1, 0],
+                  [0, 1, 0, 0],
+                  [0, 0, 1, 1],
+                  [0, 0, 0, 1]])
+    node_list = [[0, 1, 2, 3], [3, 4]]
+    edge_list = node_to_edge_list(A, node_list)
+    target = [[0, 1, 2], [3]]
+    assert edge_list == target

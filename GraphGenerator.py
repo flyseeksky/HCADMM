@@ -18,6 +18,23 @@ def check_hyper_edges(simple_adj, hyper_edges):
     assert total_edges == n_edges
 
 
+def node_to_edge_list(simple_adj, node_list):
+    """
+    Convert hyper identifiers from node list to edge list
+    :param simple_adj: adjacency matrix for simple graph
+    :param node_list: nodes list of each hyper edge
+    :return:
+    """
+    edge_list = []
+    adj = np.array(simple_adj)
+    all_edges = np.arange(adj.shape[1])
+    for nodes in node_list:
+        sub_adj = adj[nodes, :]
+        edge_idx = sub_adj.sum(axis=0) > 1
+        edge_list.append(list(all_edges[edge_idx]))
+    return edge_list
+
+
 def random_connected_graph(n_nodes, prob):
     """
     randomly generate a graph using Erdos-Renyi model
@@ -38,7 +55,7 @@ def simple_adj_to_hyper_adj(simple_adj, hyper_edges):
     This function convert an adjacency matrix of a simple graph to an adjacency of hypergraph, whose
     edges specified by parameter hyper_edges
     :param simple_adj: a matrix
-    :param hyper_edges: a list, each element of which contains the elements of one hyperedge
+    :param hyper_edges: a list of hyper edges, each of which is a list of nodes
     :return:
     """
     check_hyper_edges(simple_adj, hyper_edges)
