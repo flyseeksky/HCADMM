@@ -4,10 +4,11 @@ import numpy as np
 
 
 def test_connected():
-    G = random_connected_graph(100, .1)
+    gg = GraphGenerator(n_nodes=100)
+    G = gg.erdos_renyi(.1)
     assert nx.is_connected(G)
 
-def test_hyper_adj():
+def test_hyper_incidence():
     A = np.array([[1, 0, 0, 0],
                   [1, 1, 1, 0],
                   [0, 1, 0, 0],
