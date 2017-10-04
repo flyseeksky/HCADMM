@@ -24,7 +24,6 @@ class Simulator():
             full_list += edge
         node_degree = np.array(list(dict(Counter(full_list)).values()))
         assert node_degree.sum() == edge_degree.sum()
-        T = edge_degree.sum()
 
         I_N, I_M = np.eye(N), np.eye(M)
         A, B = [], []
@@ -42,6 +41,7 @@ class Simulator():
         D_M = B.T.dot(B)
         D_N = A.T.dot(A)
         C = A.T.dot(B)
+        x_star = v.mean()
 
         z0 = LA.pinv(D_M).dot(C.T).dot(x0)
         alpha0 = np.zeros_like(x0)
@@ -52,7 +52,7 @@ class Simulator():
             z = LA.inv(D_M).dot(C.T).dot(x)
             alpha += c * (D_N.dot(x) - C.dot(z))
 
-            primal_gap.append(LA.norm(x - v.mean()) ** 2)
+            primal_gap.append(LA.norm(x - x_star) / LA.norm(x_star))
         return primal_gap
 
 
