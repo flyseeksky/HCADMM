@@ -2,6 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
+from collections import Counter
 
 
 def check_hyper_edges(incidence, hyper_edges):
@@ -36,10 +37,11 @@ def make_hyperedge_list(hyper_edges):
 
 
 class GraphGenerator():
-    def __init__(self, n_nodes=10):
+    def __init__(self, n_nodes=10, hyper_edges=None):
         self.n_nodes = n_nodes
         self.info = ''
         self.graph = None
+        self.hyper_edges = hyper_edges
 
     def erdos_renyi(self, prob):
         """
@@ -81,6 +83,32 @@ class GraphGenerator():
         :return: networkx graph object
         """
         # TODO check how to generate star graph
+
+    def get_AB(self):
+        assert self.graph is not None
+        assert self.hyper_edges is not None
+        G = self.graph
+        M = len(self.hyper_edges)   # number of hyper-edges
+        N = self.graph.number_of_nodes()  # number of nodes
+        edge_degree = np.array([len(edge) for edge in self.hyper_edges])
+        full_list = []
+        for edge in self.hyper_edges:
+            full_list += edge
+        node_degree = np.array(list(dict(Counter(full_list)).values()))
+        assert node_degree.sum() == edge_degree.sum()
+        T = edge_degree.sum()
+
+        I_N, I_M = np.eye(N), np.eye(M)
+        A, B = [], []
+        for iN in range(N):
+            A += [I_N[iN]] * node_degree[iN]
+        A = np.array(A)
+        for iM in range(M):
+            B += [I_M[iM]] * edge_degree[iM]
+        B = np.array(B)
+        return A, B
+
+
 
 
 def node_to_edge(incidence, node_list):
