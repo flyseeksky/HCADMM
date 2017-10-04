@@ -6,6 +6,56 @@ from collections import Counter
 import numpy.linalg as LA
 
 
+class Simulator():
+    def __init__(self, n_nodes, hyper_edges=None, v=None, max_iter=100, penalty=10):
+        self.n_nodes = n_nodes
+        self.hyper_edges = hyper_edges
+        self.v = v
+        self.max_iter = max_iter
+        self.c = penalty
+
+    def get_AB(self):
+        assert self.hyper_edges is not None
+        M = len(self.hyper_edges)   # number of hyper-edges
+        N = self.n_nodes            # number of nodes
+        edge_degree = np.array([len(edge) for edge in self.hyper_edges])
+        full_list = []
+        for edge in self.hyper_edges:
+            full_list += edge
+        node_degree = np.array(list(dict(Counter(full_list)).values()))
+        assert node_degree.sum() == edge_degree.sum()
+        T = edge_degree.sum()
+
+        I_N, I_M = np.eye(N), np.eye(M)
+        A, B = [], []
+        for iN in range(N):
+            A += [I_N[iN]] * node_degree[iN]
+        A = np.array(A)
+        for iM in range(M):
+            B += [I_M[iM]] * edge_degree[iM]
+        B = np.array(B)
+        return A, B
+
+    def run_least_squares(self, n_iter, x0):
+        c, v = self.c, self.v
+        A, B = self.get_AB()
+        D_M = B.T.dot(B)
+        D_N = A.T.dot(A)
+        C = A.T.dot(B)
+
+        z0 = LA.pinv(D_M).dot(C.T).dot(x0)
+        alpha0 = np.zeros_like(x0)
+        primal_gap = []
+        x, z, alpha = x0, z0, alpha0
+        for i in range(n_iter):
+            x = LA.pinv(np.eye(self.n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
+            z = LA.inv(D_M).dot(C.T).dot(x)
+            alpha += c * (D_N.dot(x) - C.dot(z))
+
+            primal_gap.append(LA.norm(x - v.mean()) ** 2)
+        return primal_gap
+
+
 def check_hyper_edges(incidence, hyper_edges):
     """
     Check the consistency of incidence matrix and hyper edges.
@@ -35,100 +85,6 @@ def make_hyperedge_list(hyper_edges):
         if not isinstance(edge, list):
             hyper_edges[n] = [edge]
     return hyper_edges
-
-
-class GraphGenerator():
-    def __init__(self, n_nodes=10, hyper_edges=None):
-        self.n_nodes = n_nodes
-        self.info = ''
-        self.graph = None
-        self.hyper_edges = hyper_edges
-
-    def erdos_renyi(self, prob):
-        """
-        randomly generate a connected graph using Erdos-Renyi model
-        :param n_nodes: number of nodes
-        :param prob: the probability of an edge
-        :return: an Networkx object
-        """
-
-        G = nx.erdos_renyi_graph(self.n_nodes, prob)
-        while not nx.is_connected(G):
-            G = nx.erdos_renyi_graph(self.n_nodes, prob)
-        self.info = 'Erdos Renyi'
-        self.graph = G
-        return G
-
-    def line_graph(self):
-        """
-        Generate a line graph
-        :return: networkx graph object
-        """
-        self.graph = nx.path_graph(self.n_nodes)
-        self.info = 'line graph'
-        return self.graph
-
-    def star_graph(self):
-        """
-        Generate a star graph
-        :return: networkx graph object
-        """
-        self.graph = nx.star_graph(self.n_nodes - 1)
-        self.info = 'star graph'
-        return self.graph
-
-    def cluster_graph(self, n_clusters=2):
-        """
-        Generate a graph with clusters
-        :param n_clusters: number of clusters
-        :return: networkx graph object
-        """
-        # TODO check how to generate star graph
-
-    def get_AB(self):
-        # assert self.graph is not None
-        assert self.hyper_edges is not None
-        G = self.graph
-        M = len(self.hyper_edges)   # number of hyper-edges
-        N = self.n_nodes  # number of nodes
-        edge_degree = np.array([len(edge) for edge in self.hyper_edges])
-        full_list = []
-        for edge in self.hyper_edges:
-            full_list += edge
-        node_degree = np.array(list(dict(Counter(full_list)).values()))
-        assert node_degree.sum() == edge_degree.sum()
-        T = edge_degree.sum()
-
-        I_N, I_M = np.eye(N), np.eye(M)
-        A, B = [], []
-        for iN in range(N):
-            A += [I_N[iN]] * node_degree[iN]
-        A = np.array(A)
-        for iM in range(M):
-            B += [I_M[iM]] * edge_degree[iM]
-        B = np.array(B)
-        return A, B
-
-    def run_least_squares(self, n_iter, x0, c, v):
-        A, B = self.get_AB()
-        D_M = B.T.dot(B)
-        D_N = A.T.dot(A)
-        C = A.T.dot(B)
-
-        z0 = LA.pinv(D_M).dot(C.T).dot(x0)
-        alpha0 = np.zeros_like(x0)
-        primal_gap = []
-        x, z, alpha = x0, z0, alpha0
-        for i in range(n_iter):
-            x = LA.pinv(np.eye(self.n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
-            z = LA.inv(D_M).dot(C.T).dot(x)
-            alpha += c * (D_N.dot(x) - C.dot(z))
-
-            primal_gap.append(LA.norm(x - v.mean()) ** 2)
-        return primal_gap
-
-
-
 
 def node_to_edge(incidence, node_list):
     """
@@ -166,3 +122,45 @@ def hyper_incidence(incidence, hyper_edges):
             sub_hyper_incidence = incidence[:, edge]
         hyper_incidence_matrix[:, n] = sub_hyper_incidence.astype(np.int).ravel()
     return hyper_incidence_matrix
+
+# deleted during refactoring
+    # def erdos_renyi(self, prob):
+    #     """
+    #     randomly generate a connected graph using Erdos-Renyi model
+    #     :param n_nodes: number of nodes
+    #     :param prob: the probability of an edge
+    #     :return: an Networkx object
+    #     """
+    #
+    #     G = nx.erdos_renyi_graph(self.n_nodes, prob)
+    #     while not nx.is_connected(G):
+    #         G = nx.erdos_renyi_graph(self.n_nodes, prob)
+    #     self.info = 'Erdos Renyi'
+    #     self.graph = G
+    #     return G
+
+    # def line_graph(self):
+    #     """
+    #     Generate a line graph
+    #     :return: networkx graph object
+    #     """
+    #     self.graph = nx.path_graph(self.n_nodes)
+    #     self.info = 'line graph'
+    #     return self.graph
+
+    # def star_graph(self):
+    #     """
+    #     Generate a star graph
+    #     :return: networkx graph object
+    #     """
+    #     self.graph = nx.star_graph(self.n_nodes - 1)
+    #     self.info = 'star graph'
+    #     return self.graph
+    #
+    # def cluster_graph(self, n_clusters=2):
+    #     """
+    #     Generate a graph with clusters
+    #     :param n_clusters: number of clusters
+    #     :return: networkx graph object
+    #     """
+    #     #

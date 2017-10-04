@@ -1,12 +1,12 @@
-from GraphGenerator import *
+from GraphSimulator import *
 import networkx as nx
 import numpy as np
 
 
-def test_connected():
-    gg = GraphGenerator(n_nodes=100)
-    G = gg.erdos_renyi(.1)
-    assert nx.is_connected(G)
+# def test_connected():
+#     gg = ConsensusSimulator(n_nodes=100)
+#     G = gg.erdos_renyi(.1)
+#     assert nx.is_connected(G)
 
 def test_hyper_incidence():
     A = np.array([[1, 0, 0, 0],
@@ -49,8 +49,8 @@ def test_convertadj():
 
 
 def test_AB_linegraph():
-    gg = GraphGenerator(4, [[0, 1, 2], [2, 3]])
-    gg.line_graph()
+    gg = Simulator(4, [[0, 1, 2], [2, 3]])
+    # gg.line_graph()
     A, B = gg.get_AB()
     AA = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     BB = np.array([[1, 0]] * 3 + [[0, 1]] * 2)
@@ -59,15 +59,15 @@ def test_AB_linegraph():
 
 
 def test_AB_stargraph():
-    gg = GraphGenerator(4, [[0, 1, 2, 3]])
-    gg.star_graph()
+    gg = Simulator(4, [[0, 1, 2, 3]])
+    # gg.star_graph()
     A, B = gg.get_AB()
     assert np.all(A == np.eye(4))
     assert np.all(B == np.ones(4, ))
 
 
 def test_AB_hybridgraph():
-    gg = GraphGenerator(6, [[0, 1, 2, 3], [3, 4], [4, 5]])
+    gg = Simulator(6, [[0, 1, 2, 3], [3, 4], [4, 5]])
     A, B = gg.get_AB()
     AA = np.array([[1, 0, 0, 0, 0, 0],
                    [0, 1, 0, 0, 0, 0],
