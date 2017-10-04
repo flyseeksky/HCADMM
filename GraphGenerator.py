@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 from collections import Counter
+import numpy.linalg as LA
 
 
 def check_hyper_edges(incidence, hyper_edges):
@@ -107,6 +108,24 @@ class GraphGenerator():
             B += [I_M[iM]] * edge_degree[iM]
         B = np.array(B)
         return A, B
+
+    def run_least_squares(self, n_iter, x0, c, v):
+        A, B = self.get_AB()
+        D_M = B.T.dot(B)
+        D_N = A.T.dot(A)
+        C = A.T.dot(B)
+
+        z0 = LA.pinv(D_M).dot(C.T).dot(x0)
+        alpha0 = np.zeros_like(x0)
+        primal_gap = []
+        x, z, alpha = x0, z0, alpha0
+        for i in range(n_iter):
+            x = LA.pinv(np.eye(self.n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
+            z = LA.inv(D_M).dot(C.T).dot(x)
+            alpha += c * (D_N.dot(x) - C.dot(z))
+
+            primal_gap.append(LA.norm(x - v.mean()) ** 2)
+        return primal_gap
 
 
 
