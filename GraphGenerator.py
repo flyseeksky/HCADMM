@@ -85,11 +85,11 @@ class GraphGenerator():
         # TODO check how to generate star graph
 
     def get_AB(self):
-        assert self.graph is not None
+        # assert self.graph is not None
         assert self.hyper_edges is not None
         G = self.graph
         M = len(self.hyper_edges)   # number of hyper-edges
-        N = self.graph.number_of_nodes()  # number of nodes
+        N = self.n_nodes  # number of nodes
         edge_degree = np.array([len(edge) for edge in self.hyper_edges])
         full_list = []
         for edge in self.hyper_edges:

@@ -64,3 +64,19 @@ def test_AB_stargraph():
     A, B = gg.get_AB()
     assert np.all(A == np.eye(4))
     assert np.all(B == np.ones(4,))
+
+
+def test_AB_hybridgraph():
+    gg = GraphGenerator(6, [[0,1,2,3], [3,4], [4,5]])
+    A, B = gg.get_AB()
+    AA = np.array([[1,0,0,0,0,0],
+                   [0,1,0,0,0,0],
+                   [0,0,1,0,0,0],
+                   [0,0,0,1,0,0],
+                   [0,0,0,1,0,0],
+                   [0,0,0,0,1,0],
+                   [0,0,0,0,1,0],
+                   [0,0,0,0,0,1]])
+    BB = np.array([[1,0,0]] * 4 + [[0,1,0]]*2 + [[0,0,1]]*2)
+    assert np.all(A == AA)
+    assert np.all(B == BB)
