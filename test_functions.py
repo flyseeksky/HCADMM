@@ -44,7 +44,9 @@ def test_convertadj():
     edge_list = [[0, 1], [2]]
     hyper_A = hyper_incidence(A, edge_list)
     target = np.array([[1, 0], [1, 0], [1, 1], [0, 1]])
+
     assert np.all(hyper_A == target)
+
 
 def test_AB_linegraph():
     gg = GraphGenerator(4, [[0, 1, 2], [2, 3]])
@@ -55,7 +57,10 @@ def test_AB_linegraph():
     assert np.all(A == AA)
     assert np.all(B == BB)
 
+
 def test_AB_stargraph():
-    gg = GraphGenerator(4, [[0, 1, 2], [2, 3]])
+    gg = GraphGenerator(4, [[0, 1, 2, 3]])
     gg.star_graph()
     A, B = gg.get_AB()
+    assert np.all(A == np.eye(4))
+    assert np.all(B == np.ones(4,))
