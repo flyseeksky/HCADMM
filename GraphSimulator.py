@@ -46,14 +46,18 @@ class Simulator():
         z0 = LA.pinv(D_M).dot(C.T).dot(x0)
         alpha0 = np.zeros_like(x0)
         primal_gap = []
+        primal_residual, dual_residual = [], []
         x, z, alpha = x0, z0, alpha0
         for i in range(n_iter):
+            z_prev = z
             x = LA.pinv(np.eye(self.n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
             z = LA.inv(D_M).dot(C.T).dot(x)
             alpha += c * (D_N.dot(x) - C.dot(z))
 
             primal_gap.append(LA.norm(x - x_star) / LA.norm(x_star))
-        return primal_gap
+            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
+            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
+        return primal_gap, primal_residual, dual_residual
 
 
 def check_hyper_edges(incidence, hyper_edges):
