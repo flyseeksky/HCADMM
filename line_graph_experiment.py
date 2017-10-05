@@ -34,9 +34,10 @@ gg.hyper_edges = decentralized_hyper_edge
 decentralized_primal_gap = gg.run_least_squares(max_iter, x0)
 
 # plot
-plt.semilogy(hybrid_primal_gap, lw=2, label='hybrid')
-plt.semilogy(decentralized_primal_gap, lw=2, label='decentralized')
-plt.semilogy(c_primal_gap, lw=2, label='centralized')
+marker_postition = range(0, max_iter, 10)
+plt.semilogy(decentralized_primal_gap, '-d', lw=2, label='decentralized', markevery=marker_postition)
+plt.semilogy(c_primal_gap, '-^', lw=2, label='centralized', markevery=marker_postition)
+plt.semilogy(hybrid_primal_gap, '-o', lw=2, label='hybrid', markevery=marker_postition)
 plt.ylabel('$||x - x^*||$')
 plt.xlabel('Number of iterations')
 plt.title('Line graph with {:2d} nodes'.format(n_nodes))
