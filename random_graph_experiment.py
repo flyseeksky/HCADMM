@@ -17,19 +17,19 @@ x0 = np.random.randn(n_nodes)
 alpha0 = np.zeros_like(x0)
 
 # centralized
-hyper_edges = [list(range(n_nodes))]
-gg.hyper_edge_list = hyper_edges
+c_hyper_edges = [list(range(n_nodes))]
+gg.hyper_edge_list = c_hyper_edges
 c_opt_gap, c_primal_residual, c_dual_residual = gg.run_least_squares(x0)
 
 # hybrid
-index = list(range(n_nodes))
-hyper_edges = [index[i:i + 3] for i in range(0, n_nodes-1, 2)]
-gg.hyper_edge_list = hyper_edges
+g = Simulator.erdos_renyi(.2)
+h_hyper_edges = Simulator.auto_discover_hyper_edge(g)
+gg.hyper_edge_list = h_hyper_edges
 h_opt_gap, h_primal_residual, h_dual_residual = gg.run_least_squares(x0)
 
 # decentralized ADMM
-decentralized_hyper_edge = [[i, i + 1] for i in range(n_nodes-1)]
-gg.hyper_edge_list = decentralized_hyper_edge
+# TODO get A and B for decentralized method
+gg.hyper_edge_list = d_hyper_edge
 d_opt_gap, d_primal_residual, d_dual_residual = gg.run_least_squares(x0)
 
 # plot
