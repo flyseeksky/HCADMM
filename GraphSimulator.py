@@ -1,9 +1,8 @@
-import networkx as nx
-import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
 from collections import Counter
 import numpy.linalg as LA
+import networkx as nx
+from operator import itemgetter
 
 
 class Simulator():
@@ -13,6 +12,76 @@ class Simulator():
         self.v = v
         self.max_iter = max_iter
         self.c = penalty
+
+    def from_hyper_edges(self):
+        hyper_edges = self.hyper_edges
+        edge_degree = np.array([len(edge) for edge in hyper_edges])
+        total_degree = edge_degree.sum()
+        number_of_edges = len(hyper_edges)
+        number_of_nodes = self.n_nodes
+        I_A, I_B = np.eye(number_of_nodes), np.eye(number_of_edges)
+
+        A, B = [], []
+        for idx, edge in enumerate(hyper_edges):
+            B += [I_B[idx]] * len(edge)
+            for node in edge:
+                A.append(I_A[node])
+        A, B = np.array(A), np.array(B)
+        return A, B
+
+    @staticmethod
+    def auto_discover_hyper_edge(graph):
+        assert isinstance(graph, nx.Graph)
+        node_degree_list = sorted(graph.degree, key=itemgetter(1), reverse=True)
+        threshold = 1
+        node_degree_list_qualify = [nd for nd in node_degree_list if nd[1] > threshold]
+        qualify_set = set([nd[0] for nd in node_degree_list_qualify])
+        all_set = set(graph.nodes)
+        remaining_set = all_set.difference(qualify_set)
+
+        hyper_edges = []
+        for node, degree in node_degree_list_qualify:
+            if node not in qualify_set:
+                continue
+            # add one hyper-edge into list
+            edge = [node] + list(nx.all_neighbors(graph, node))
+            hyper_edges.append(sorted(edge))
+            # mark all neighbors as not qualify
+            qualify_set.difference_update(edge)
+            remaining_set.difference_update(edge)
+
+        # consider nodes that do not qualify
+        for node in remaining_set:
+            for neighbor in nx.all_neighbors(graph, node):
+                hyper_edges.append(sorted([node, neighbor]))
+
+        return hyper_edges
+
+
+    def run_least_squares(self, x0):
+        c, v = self.c, self.v
+        # A, B = self.get_AB()
+        A, B = self.from_hyper_edges()
+        D_M = B.T.dot(B)
+        D_N = A.T.dot(A)
+        C = A.T.dot(B)
+        x_star = v.mean()
+
+        z0 = LA.pinv(D_M).dot(C.T).dot(x0)
+        alpha0 = np.zeros_like(x0)
+        primal_gap = []
+        primal_residual, dual_residual = [], []
+        x, z, alpha = x0, z0, alpha0
+        for i in range(self.max_iter):
+            z_prev = z
+            x = LA.pinv(np.eye(self.n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
+            z = LA.inv(D_M).dot(C.T).dot(x)
+            alpha += c * (D_N.dot(x) - C.dot(z))
+
+            primal_gap.append(LA.norm(x - x_star) / LA.norm(x_star))
+            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
+            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
+        return primal_gap, primal_residual, dual_residual
 
     def get_AB(self):
         assert self.hyper_edges is not None
@@ -34,30 +103,6 @@ class Simulator():
             B += [I_M[iM]] * edge_degree[iM]
         B = np.array(B)
         return A, B
-
-    def run_least_squares(self, n_iter, x0):
-        c, v = self.c, self.v
-        A, B = self.get_AB()
-        D_M = B.T.dot(B)
-        D_N = A.T.dot(A)
-        C = A.T.dot(B)
-        x_star = v.mean()
-
-        z0 = LA.pinv(D_M).dot(C.T).dot(x0)
-        alpha0 = np.zeros_like(x0)
-        primal_gap = []
-        primal_residual, dual_residual = [], []
-        x, z, alpha = x0, z0, alpha0
-        for i in range(n_iter):
-            z_prev = z
-            x = LA.pinv(np.eye(self.n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
-            z = LA.inv(D_M).dot(C.T).dot(x)
-            alpha += c * (D_N.dot(x) - C.dot(z))
-
-            primal_gap.append(LA.norm(x - x_star) / LA.norm(x_star))
-            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
-            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
-        return primal_gap, primal_residual, dual_residual
 
 
 def check_hyper_edges(incidence, hyper_edges):
