@@ -3,6 +3,7 @@ from collections import Counter
 import numpy.linalg as LA
 import networkx as nx
 from operator import itemgetter
+import scipy.sparse as sps
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -45,7 +46,8 @@ class Simulator():
         return np.ones((self.graph.number_of_nodes(),1))
 
     def _get_d_incidence(self):
-        return nx.incidence_matrix(self.graph).todense()
+        # return nx.incidence_matrix(self.graph).todense()
+        return nx.incidence_matrix(self.graph)
 
     def incidence_from_hyper_edge_list(self):
         assert self.hyper_edge_list, 'You need to set hyper_edge_list first'
@@ -66,9 +68,10 @@ class Simulator():
         max_iter = setting['max_iter']
         print('=============== Mode: ' + self.mode + ' ====================')
 
-        C = np.asarray(self.get_incidence())
+        # C = np.asarray(self.get_incidence())
+        C = self.get_incidence()
         A, B = incidence_to_ab(C)
-        node_degree, edge_degree = C.sum(axis=1), C.sum(axis=0)
+        node_degree, edge_degree = np.squeeze(np.asarray(C.sum(axis=1))), np.squeeze(np.asarray(C.sum(axis=0)))
 
         x_opt = v.mean()
 
@@ -173,18 +176,25 @@ def incidence_to_ab(incidence):
     :param incidence:
     :return:
     """
-    assert isinstance(incidence, np.ndarray), 'incidence matrix must be numpy.ndarray object'
-    n, m = incidence.shape
-    t = int(incidence.sum())
+    # assert isinstance(incidence, np.ndarray), 'incidence matrix must be numpy.ndarray object'
+    if not sps.isspmatrix(incidence):
+        sp_incidence = sps.csr_matrix(incidence)
+    else:
+        sp_incidence = incidence
+    n, m = sp_incidence.shape
+    t = sp_incidence.nnz
 
-    A, B = np.zeros((t, n)), np.zeros((t, m))
-    total = 0
-    for row in range(n):
-        for col in range(m):
-            if incidence[row, col] != 0:
-                A[total, row] = 1
-                B[total, col] = 1
-                total += 1
+    A, B = sps.lil_matrix((t, n)), sps.lil_matrix((t, m))
+    row_index, col_index = sp_incidence.nonzero()
+    for idx, (row, col) in enumerate(zip(row_index, col_index)):
+        A[idx, row] = 1
+        B[idx, col] = 1
+    # for row in range(n):
+    #     for col in range(m):
+    #         if incidence[row, col] != 0:
+    #             A[total, row] = 1
+    #             B[total, col] = 1
+    #             total += 1
     return A, B
 
 # def from_hyper_edges(self):
