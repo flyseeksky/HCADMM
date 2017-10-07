@@ -143,23 +143,23 @@ class Simulator():
                 logging.debug('Progress {}'.format(100 * (i+1)/ max_iter))
         logging.debug('Mode: {}, ending for loop'.format(self.mode))
         return primal_gap, primal_residual, dual_residual
+
+    @staticmethod
+    def erdos_renyi(n_nodes, prob):
+        """
+        randomly generate a connected graph using Erdos-Renyi model
+        :param n_nodes: number of nodes
+        :param prob: the probability of an edge
+        :return: an Networkx object
+        """
+
+        G = nx.erdos_renyi_graph(n_nodes, prob)
+        while not nx.is_connected(G):
+            G = nx.erdos_renyi_graph(n_nodes, prob)
+        return G
 # ================================================================================================
 # end of class definition
 # ================================================================================================
-
-
-def erdos_renyi(n_nodes, prob):
-    """
-    randomly generate a connected graph using Erdos-Renyi model
-    :param n_nodes: number of nodes
-    :param prob: the probability of an edge
-    :return: an Networkx object
-    """
-
-    G = nx.erdos_renyi_graph(n_nodes, prob)
-    while not nx.is_connected(G):
-        G = nx.erdos_renyi_graph(n_nodes, prob)
-    return G
 
 
 def incidence_to_ab(incidence):
