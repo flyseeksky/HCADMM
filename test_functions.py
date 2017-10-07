@@ -1,6 +1,27 @@
 from Admm_simulator import *
 import networkx as nx
 import numpy as np
+import pytest
+
+
+# @pytest.fixture(scope='module')
+# def hybrid_graph_1():
+#     A = np.array([[1, 0, 0, 0, 0],
+#                    [0, 1, 0, 0, 0],
+#                    [0, 1, 0, 0, 0],
+#                    [0, 1, 0, 0, 0],
+#                    [0, 0, 1, 0, 0],
+#                    [0, 0, 0, 1, 0],
+#                    [0, 0, 0, 1, 0],
+#                    [0, 0, 0, 0, 1]])
+#     B = np.array([[1, 0, 0, 0],
+#                    [1, 0, 0, 0],
+#                    [0, 1, 0, 0],
+#                    [0, 0, 1, 0],
+#                    [0, 1, 0, 0],
+#                    [0, 0, 1, 0],
+#                    [0, 0, 0, 1],
+#                    [0, 0, 0, 1]])
 
 
 class TestAutoDiscovery(object):
@@ -30,7 +51,37 @@ class TestAutoDiscovery(object):
 
 class TestIncidenceFromHyperEdge(object):
     def test_line_graph(self):
-        hyper_edge_list = [(0,1,2,3,4,5,6,7,8,9)]
+        g = nx.path_graph(5)
+        sim = Simulator(g)
+
+        hyper_edge_list = [(0,1,2,3,4)]
+        sim.hyper_edge_list = hyper_edge_list
+        incidence = np.array(sim.incidence_from_hyper_edge_list())
+        target = np.ones(5)
+        assert np.all(target == incidence)
+
+        hyper_edge_list = [(0,1,2),(2,3,4)]
+        sim.hyper_edge_list = hyper_edge_list
+        incidence = np.array(sim.incidence_from_hyper_edge_list())
+        target = np.array([[1,0]] * 2 + [[1,1]] + [[0,1]] * 2)
+        assert np.all(target == incidence)
+
+        hyper_edge_list = [(0, 1, 2), (2, 3)]
+        gg = nx.path_graph(4)
+        sim = Simulator(gg)
+        sim.hyper_edge_list = hyper_edge_list
+        incidence = np.array(sim.incidence_from_hyper_edge_list())
+        target = np.array([[1, 0]] * 2 + [[1, 1]] + [[0, 1]])
+        assert np.all(target == incidence)
+
+    def test_hybrid_graph(self):
+        g = nx.Graph()
+        g.add_edges_from([(0,1),(1,2),(1,3),(3,4)])
+        sim = Simulator(g)
+        sim.auto_discover_hyper_edge(3)
+        C = sim.incidence_from_hyper_edge_list()
+        target = np.array([[1,0]]*3 + [[1,1], [0,1]])
+        assert np.all(C == target)
 
 
 class TestUtilities(object):

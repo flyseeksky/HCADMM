@@ -1,6 +1,7 @@
 from Admm_simulator import Simulator
 import numpy as np
 import matplotlib.pyplot as plt
+import networkx as nx
 
 
 # simulation parameters
@@ -8,29 +9,24 @@ n_nodes = 100     # number of nodes
 max_iter = 200   # maximum number of iterations
 c = 20           # penalty parameter in ADMM
 v = np.random.rand(n_nodes) * 10 + 10
-gg = Simulator(n_nodes, penalty=c, max_iter=max_iter, v=v)
-
-
 x_opt = v.mean()
-
 x0 = np.random.randn(n_nodes)
-alpha0 = np.zeros_like(x0)
+setting = {'penalty': c, 'max_iter':max_iter, 'objective':v, 'initial':x0}
+
+g = nx.path_graph(n_nodes)
+sim = Simulator(g, simulation_setting=setting)
 
 # centralized
-hyper_edges = [list(range(n_nodes))]
-gg.hyper_edge_list = hyper_edges
-c_opt_gap, c_primal_residual, c_dual_residual = gg.run_least_squares(x0)
+sim.mode = 'centralized'
+c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
-index = list(range(n_nodes))
-hyper_edges = [index[i:i + 3] for i in range(0, n_nodes-1, 2)]
-gg.hyper_edge_list = hyper_edges
-h_opt_gap, h_primal_residual, h_dual_residual = gg.run_least_squares(x0)
+sim.mode = 'hybrid'
+h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
-decentralized_hyper_edge = [[i, i + 1] for i in range(n_nodes-1)]
-gg.hyper_edge_list = decentralized_hyper_edge
-d_opt_gap, d_primal_residual, d_dual_residual = gg.run_least_squares(x0)
+sim.mode = 'decentralized'
+d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 # plot
 marker_at = range(0, max_iter, 10)

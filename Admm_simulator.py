@@ -35,17 +35,20 @@ class Simulator():
             raise Exception('Unsupported mode!')
 
     def _get_h_incidence(self, auto_discover=True):
-        self.auto_discover_hyper_edge()
-        incidence = self.incidence_from_hyper_edges()
+        if auto_discover:
+            # TODO auto threshold
+            self.auto_discover_hyper_edge(2)
+        incidence = self.incidence_from_hyper_edge_list()
         return incidence
 
     def _get_c_incidence(self):
-        return np.ones(self.graph.number_of_nodes())
+        return np.ones((self.graph.number_of_nodes(),1))
 
     def _get_d_incidence(self):
-        return nx.incidence_matrix(self.graph)
+        return nx.incidence_matrix(self.graph).todense()
 
-    def incidence_from_hyper_edges(self):
+    def incidence_from_hyper_edge_list(self):
+        assert self.hyper_edge_list, 'You need to set hyper_edge_list first'
         hyper_edges = sorted(self.hyper_edge_list)
         number_of_edges = len(hyper_edges)
         number_of_nodes = self.graph.number_of_nodes()
@@ -61,13 +64,13 @@ class Simulator():
         x0 = setting['initial']
         max_iter = setting['max_iter']
 
-        C = self.get_incidence()
+        C = np.asarray(self.get_incidence())
         A, B = incidence_to_ab(C)
         node_degree, edge_degree = C.sum(axis=1), C.sum(axis=0)
         D_N, D_M = np.diag(node_degree), np.diag(edge_degree)
         n_nodes = C.shape[0]
 
-        x_star = v.mean()
+        x_opt = v.mean()
 
         z0 = LA.pinv(D_M).dot(C.T).dot(x0)
         alpha0 = np.zeros_like(x0)
@@ -80,7 +83,7 @@ class Simulator():
             z = LA.inv(D_M).dot(C.T).dot(x)
             alpha += c * (D_N.dot(x) - C.dot(z))
 
-            primal_gap.append(LA.norm(x - x_star) / LA.norm(x_star))
+            primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
             primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
             dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
         return primal_gap, primal_residual, dual_residual
@@ -90,7 +93,6 @@ class Simulator():
         assert isinstance(graph, nx.Graph), 'Simulator.graph must be instance of networkx.Graph'
 
         node_degree_list = sorted(list(graph.degree), key=itemgetter(1), reverse=True)
-        # TODO dynamic threshold
         # TODO fix number of local centers
         # consider according to descending degree order
         node_degree_list_to_consider = [nd for nd in node_degree_list if nd[1] >= threshold]
@@ -154,6 +156,7 @@ def index_to_position(index, size):
     :param size: size of positional vector
     :return: positional vector
     """
+    assert max(index) < size, 'Index out of bound'
     pos_vec = np.zeros((size))
     for i in index:
         pos_vec[i] = 1
