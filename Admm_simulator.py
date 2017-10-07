@@ -59,33 +59,41 @@ class Simulator():
         return incidence
 
     def run_least_squares(self):
+        # extract simulation settings
         setting = self.simulation_setting
         c, v = setting['penalty'], setting['objective']
         x0 = setting['initial']
         max_iter = setting['max_iter']
+        print('=============== Mode: ' + self.mode + ' ====================')
 
         C = np.asarray(self.get_incidence())
         A, B = incidence_to_ab(C)
         node_degree, edge_degree = C.sum(axis=1), C.sum(axis=0)
-        D_N, D_M = np.diag(node_degree), np.diag(edge_degree)
-        n_nodes = C.shape[0]
 
         x_opt = v.mean()
 
-        z0 = LA.pinv(D_M).dot(C.T).dot(x0)
+        z0 = C.T.dot(x0) / edge_degree
         alpha0 = np.zeros_like(x0)
         primal_gap = []
         primal_residual, dual_residual = [], []
         x, z, alpha = x0, z0, alpha0
         for i in range(max_iter):
             z_prev = z
-            x = LA.pinv(np.eye(n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
-            z = LA.inv(D_M).dot(C.T).dot(x)
-            alpha += c * (D_N.dot(x) - C.dot(z))
+            # TODO optimize: eliminate pinv
+            # x = LA.pinv(np.eye(n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
+            # z = LA.inv(D_M).dot(C.T).dot(x)
+            x = (v - alpha + c * C.dot(z)) / (1 + c * node_degree)
+            z = C.T.dot(x) / edge_degree
+            alpha += c * (node_degree *x - C.dot(z))
 
             primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
             primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
             dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
+
+            # debug printing
+            if i % 20 == 19:
+                print('Progress {}'.format(100 * (i+1)/ max_iter))
+
         return primal_gap, primal_residual, dual_residual
 
     def auto_discover_hyper_edge(self, threshold):
