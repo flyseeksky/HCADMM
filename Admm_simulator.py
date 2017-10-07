@@ -3,6 +3,7 @@ from collections import Counter
 import numpy.linalg as LA
 import networkx as nx
 from operator import itemgetter
+import scipy.sparse as sps
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -45,48 +46,26 @@ class Simulator():
         return np.ones((self.graph.number_of_nodes(),1))
 
     def _get_d_incidence(self):
-        return nx.incidence_matrix(self.graph).todense()
+        # return nx.incidence_matrix(self.graph).todense()
+        return nx.incidence_matrix(self.graph)
 
     def incidence_from_hyper_edge_list(self):
+        """
+        Get incidence matrix from hyper-edge list.
+
+        The shape of incidence matrix should be NxM, where N is number of nodes, and M number of hyper-edges.
+        C[i,j] = 1 if node i in hyper-edge j.
+        :return: incidence matrix
+        """
         assert self.hyper_edge_list, 'You need to set hyper_edge_list first'
-        hyper_edges = sorted(self.hyper_edge_list)
-        number_of_edges = len(hyper_edges)
+        hyper_edge_list = sorted(self.hyper_edge_list)
+        number_of_edges = len(hyper_edge_list)
         number_of_nodes = self.graph.number_of_nodes()
 
-        incidence = np.empty((number_of_nodes, number_of_edges))
-        for idx, edge in enumerate(hyper_edges):
-            incidence[:, idx] = index_to_position(edge, number_of_nodes)
-        return incidence
-
-    def run_least_squares(self):
-        setting = self.simulation_setting
-        c, v = setting['penalty'], setting['objective']
-        x0 = setting['initial']
-        max_iter = setting['max_iter']
-
-        C = np.asarray(self.get_incidence())
-        A, B = incidence_to_ab(C)
-        node_degree, edge_degree = C.sum(axis=1), C.sum(axis=0)
-        D_N, D_M = np.diag(node_degree), np.diag(edge_degree)
-        n_nodes = C.shape[0]
-
-        x_opt = v.mean()
-
-        z0 = LA.pinv(D_M).dot(C.T).dot(x0)
-        alpha0 = np.zeros_like(x0)
-        primal_gap = []
-        primal_residual, dual_residual = [], []
-        x, z, alpha = x0, z0, alpha0
-        for i in range(max_iter):
-            z_prev = z
-            x = LA.pinv(np.eye(n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
-            z = LA.inv(D_M).dot(C.T).dot(x)
-            alpha += c * (D_N.dot(x) - C.dot(z))
-
-            primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
-            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
-            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
-        return primal_gap, primal_residual, dual_residual
+        incidence = sps.lil_matrix((number_of_nodes, number_of_edges))
+        for edge_idx, edge in enumerate(hyper_edge_list):
+            incidence[edge, edge_idx] = 1
+        return sps.csr_matrix(incidence)
 
     def auto_discover_hyper_edge(self, threshold):
         graph = self.graph
@@ -125,38 +104,62 @@ class Simulator():
         self.hyper_edge_list = sorted(hyper_edge_list)
         return self.hyper_edge_list
 
-def erdos_renyi(n_nodes, prob):
-    """
-    randomly generate a connected graph using Erdos-Renyi model
-    :param n_nodes: number of nodes
-    :param prob: the probability of an edge
-    :return: an Networkx object
-    """
+    def run_least_squares(self):
+        # extract simulation settings
+        setting = self.simulation_setting
+        c, v = setting['penalty'], setting['objective']
+        x0 = setting['initial']
+        max_iter = setting['max_iter']
+        logging.debug('=============== Mode: ' + self.mode + ' ====================')
 
-    G = nx.erdos_renyi_graph(n_nodes, prob)
-    while not nx.is_connected(G):
+        # C = np.asarray(self.get_incidence())
+        C = self.get_incidence()
+        A, B = incidence_to_ab(C)
+        node_degree, edge_degree = np.squeeze(np.asarray(C.sum(axis=1))), np.squeeze(np.asarray(C.sum(axis=0)))
+
+        x_opt = v.mean()
+
+        z0 = C.T.dot(x0) / edge_degree
+        alpha0 = np.zeros_like(x0)
+        primal_gap = []
+        primal_residual, dual_residual = [], []
+        x, z, alpha = x0, z0, alpha0
+        logging.debug('Mode: {}, starting for-loop'.format(self.mode))
+        for i in range(max_iter):
+            z_prev = z
+            # TODO optimize: eliminate pinv
+            # x = LA.pinv(np.eye(n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
+            # z = LA.inv(D_M).dot(C.T).dot(x)
+            x = (v - alpha + c * C.dot(z)) / (1 + c * node_degree)
+            z = C.T.dot(x) / edge_degree
+            alpha += c * (node_degree *x - C.dot(z))
+
+            primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
+            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
+            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
+
+            # debug printing
+            if i % 20 == 19:
+                logging.debug('Progress {}'.format(100 * (i+1)/ max_iter))
+        logging.debug('Mode: {}, ending for loop'.format(self.mode))
+        return primal_gap, primal_residual, dual_residual
+
+    @staticmethod
+    def erdos_renyi(n_nodes, prob):
+        """
+        randomly generate a connected graph using Erdos-Renyi model
+        :param n_nodes: number of nodes
+        :param prob: the probability of an edge
+        :return: an Networkx object
+        """
+
         G = nx.erdos_renyi_graph(n_nodes, prob)
-    return G
-
-def index_to_position(index, size):
-    """
-    Convert a list of index to positional vector.
-
-    Index begins from zero. Each element of index will correspond to one '1' in positional vector.
-
-    >>>> index_to_position([2, 3], 5)
-    array([0, 0, 1, 1, 0])
-    >>>> index_to_position([1], 3)
-    array([0, 1, 0])
-    :param index: list of index
-    :param size: size of positional vector
-    :return: positional vector
-    """
-    assert max(index) < size, 'Index out of bound'
-    pos_vec = np.zeros((size))
-    for i in index:
-        pos_vec[i] = 1
-    return pos_vec
+        while not nx.is_connected(G):
+            G = nx.erdos_renyi_graph(n_nodes, prob)
+        return G
+# ================================================================================================
+# end of class definition
+# ================================================================================================
 
 
 def incidence_to_ab(incidence):
@@ -165,38 +168,24 @@ def incidence_to_ab(incidence):
     :param incidence:
     :return:
     """
-    assert isinstance(incidence, np.ndarray), 'incidence matrix must be numpy.ndarray object'
-    n, m = incidence.shape
-    t = int(incidence.sum())
+    assert isinstance(incidence, np.ndarray) or sps.isspmatrix(incidence), 'Invalid incidence matrix'
 
-    A, B = np.zeros((t, n)), np.zeros((t, m))
-    total = 0
-    for row in range(n):
-        for col in range(m):
-            if incidence[row, col] != 0:
-                A[total, row] = 1
-                B[total, col] = 1
-                total += 1
-    return A, B
+    # Convert incidence matrix to sparse format
+    if not sps.isspmatrix(incidence):
+        sp_incidence = sps.csr_matrix(incidence)
+    else:
+        sp_incidence = incidence
 
-# def from_hyper_edges(self):
-#     hyper_edges = self.hyper_edges
-#     edge_degree = np.array([len(edge) for edge in hyper_edges])
-#     total_degree = edge_degree.sum()
-#     number_of_edges = len(hyper_edges)
-#     number_of_nodes = self.graph.number_of_nodes()
-#     I_A, I_B = np.eye(number_of_nodes), np.eye(number_of_edges)
-#
-#     A, B = [], []
-#     for idx, edge in enumerate(hyper_edges):
-#         B += [list(I_B[idx])] * len(edge)
-#         for node in edge:
-#             A.append(list(I_A[node]))
-#     #
-#     # A = sorted(A, reverse=True)
-#     # B = [b for a,b in sorted(zip(A, B), key=itemgetter(0), reverse=True)]
-#     A, B = np.array(A), np.array(B)
-#     return A, B
+    n, m = sp_incidence.shape
+    t = sp_incidence.nnz
+
+    # Elements of A, B need to be changed, so lil_matrix is more preferable
+    A, B = sps.lil_matrix((t, n)), sps.lil_matrix((t, m))
+    row_index, col_index = sp_incidence.nonzero()
+    for idx, (row, col) in enumerate(zip(row_index, col_index)):
+        A[idx, row] = 1
+        B[idx, col] = 1
+    return A.tocsr(), B.tocsr()
 
 def check_hyper_edges(incidence, hyper_edges):
     """
@@ -327,3 +316,40 @@ def hyper_incidence(incidence, hyper_edges):
     #     :return: networkx graph object
     #     """
     #     #
+# def index_to_position(index, size):
+#     """
+#     Convert a list of index to positional vector.
+#
+#     Index begins from zero. Each element of index will correspond to one '1' in positional vector.
+#
+#     >>>> index_to_position([2, 3], 5)
+#     array([0, 0, 1, 1, 0])
+#     >>>> index_to_position([1], 3)
+#     array([0, 1, 0])
+#     :param index: list of index
+#     :param size: size of positional vector
+#     :return: positional vector
+#     """
+#     assert max(index) < size, 'Index out of bound'
+#     pos_vec = np.zeros((size))
+#     for i in index:
+#         pos_vec[i] = 1
+#     return pos_vec
+# def from_hyper_edges(self):
+#     hyper_edges = self.hyper_edges
+#     edge_degree = np.array([len(edge) for edge in hyper_edges])
+#     total_degree = edge_degree.sum()
+#     number_of_edges = len(hyper_edges)
+#     number_of_nodes = self.graph.number_of_nodes()
+#     I_A, I_B = np.eye(number_of_nodes), np.eye(number_of_edges)
+#
+#     A, B = [], []
+#     for idx, edge in enumerate(hyper_edges):
+#         B += [list(I_B[idx])] * len(edge)
+#         for node in edge:
+#             A.append(list(I_A[node]))
+#     #
+#     # A = sorted(A, reverse=True)
+#     # B = [b for a,b in sorted(zip(A, B), key=itemgetter(0), reverse=True)]
+#     A, B = np.array(A), np.array(B)
+#     return A, B
