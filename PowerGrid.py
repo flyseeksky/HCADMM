@@ -34,35 +34,35 @@ sim.mode = 'decentralized'
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 # plotting figures
-marker_at = range(0, max_iter, 10)
-title_str = 'US Power Grid Network, Nodes: {}, Edges: {}'.format(g.order(), g.number_of_edges())
-plt.figure(1)
-plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
-plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
-plt.ylabel('Optimality gap $||x - x^\star||^2$')
-plt.xlabel('Iterations')
-plt.title(title_str)
-plt.legend()
-
-
-plt.figure(2)
-plt.plot(d_primal_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.plot(c_primal_residual, '-s', lw=2, label='centralized', markevery=marker_at)
-plt.plot(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
-plt.title(title_str)
-plt.xlabel('Iterations')
-plt.ylabel('Primal residual')
-plt.legend()
-
-plt.figure(3)
-plt.plot(d_dual_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.plot(c_dual_residual, '-s', lw=2, label='centralized', markevery=marker_at)
-plt.plot(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
-plt.title(title_str)
-plt.xlabel('Iterations')
-plt.ylabel('Dual residual')
-plt.legend()
-
-
-plt.show()
+# marker_at = range(0, max_iter, 10)
+# title_str = 'US Power Grid Network, Nodes: {}, Edges: {}'.format(g.order(), g.number_of_edges())
+# plt.figure(1)
+# plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
+# plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
+# plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
+# plt.ylabel('Optimality gap $||x - x^\star||^2$')
+# plt.xlabel('Iterations')
+# plt.title(title_str)
+# plt.legend()
+#
+#
+# plt.figure(2)
+# plt.plot(d_primal_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
+# plt.plot(c_primal_residual, '-s', lw=2, label='centralized', markevery=marker_at)
+# plt.plot(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
+# plt.title(title_str)
+# plt.xlabel('Iterations')
+# plt.ylabel('Primal residual')
+# plt.legend()
+#
+# plt.figure(3)
+# plt.plot(d_dual_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
+# plt.plot(c_dual_residual, '-s', lw=2, label='centralized', markevery=marker_at)
+# plt.plot(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
+# plt.title(title_str)
+# plt.xlabel('Iterations')
+# plt.ylabel('Dual residual')
+# plt.legend()
+#
+#
+# plt.show()

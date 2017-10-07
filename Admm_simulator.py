@@ -56,48 +56,10 @@ class Simulator():
         number_of_nodes = self.graph.number_of_nodes()
 
         incidence = np.empty((number_of_nodes, number_of_edges))
+        # incidence = sps.lil_matrix((number_of_nodes, number_of_edges))
         for idx, edge in enumerate(hyper_edges):
             incidence[:, idx] = index_to_position(edge, number_of_nodes)
-        return incidence
-
-    def run_least_squares(self):
-        # extract simulation settings
-        setting = self.simulation_setting
-        c, v = setting['penalty'], setting['objective']
-        x0 = setting['initial']
-        max_iter = setting['max_iter']
-        print('=============== Mode: ' + self.mode + ' ====================')
-
-        # C = np.asarray(self.get_incidence())
-        C = self.get_incidence()
-        A, B = incidence_to_ab(C)
-        node_degree, edge_degree = np.squeeze(np.asarray(C.sum(axis=1))), np.squeeze(np.asarray(C.sum(axis=0)))
-
-        x_opt = v.mean()
-
-        z0 = C.T.dot(x0) / edge_degree
-        alpha0 = np.zeros_like(x0)
-        primal_gap = []
-        primal_residual, dual_residual = [], []
-        x, z, alpha = x0, z0, alpha0
-        for i in range(max_iter):
-            z_prev = z
-            # TODO optimize: eliminate pinv
-            # x = LA.pinv(np.eye(n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
-            # z = LA.inv(D_M).dot(C.T).dot(x)
-            x = (v - alpha + c * C.dot(z)) / (1 + c * node_degree)
-            z = C.T.dot(x) / edge_degree
-            alpha += c * (node_degree *x - C.dot(z))
-
-            primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
-            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
-            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
-
-            # debug printing
-            if i % 20 == 19:
-                print('Progress {}'.format(100 * (i+1)/ max_iter))
-
-        return primal_gap, primal_residual, dual_residual
+        return sps.csr_matrix(incidence)
 
     def auto_discover_hyper_edge(self, threshold):
         graph = self.graph
@@ -135,6 +97,47 @@ class Simulator():
         hyper_edge_list += list(remaining_edge_set)
         self.hyper_edge_list = sorted(hyper_edge_list)
         return self.hyper_edge_list
+
+    def run_least_squares(self):
+        # extract simulation settings
+        setting = self.simulation_setting
+        c, v = setting['penalty'], setting['objective']
+        x0 = setting['initial']
+        max_iter = setting['max_iter']
+        logging.debug('=============== Mode: ' + self.mode + ' ====================')
+
+        # C = np.asarray(self.get_incidence())
+        C = self.get_incidence()
+        A, B = incidence_to_ab(C)
+        node_degree, edge_degree = np.squeeze(np.asarray(C.sum(axis=1))), np.squeeze(np.asarray(C.sum(axis=0)))
+
+        x_opt = v.mean()
+
+        z0 = C.T.dot(x0) / edge_degree
+        alpha0 = np.zeros_like(x0)
+        primal_gap = []
+        primal_residual, dual_residual = [], []
+        x, z, alpha = x0, z0, alpha0
+        logging.debug('Mode: {}, starting for-loop'.format(self.mode))
+        for i in range(max_iter):
+            z_prev = z
+            # TODO optimize: eliminate pinv
+            # x = LA.pinv(np.eye(n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
+            # z = LA.inv(D_M).dot(C.T).dot(x)
+            x = (v - alpha + c * C.dot(z)) / (1 + c * node_degree)
+            z = C.T.dot(x) / edge_degree
+            alpha += c * (node_degree *x - C.dot(z))
+
+            primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
+            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
+            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
+
+            # debug printing
+            if i % 20 == 19:
+                logging.debug('Progress {}'.format(100 * (i+1)/ max_iter))
+        logging.debug('Mode: {}, ending for loop'.format(self.mode))
+        return primal_gap, primal_residual, dual_residual
+
 
 def erdos_renyi(n_nodes, prob):
     """
@@ -176,26 +179,24 @@ def incidence_to_ab(incidence):
     :param incidence:
     :return:
     """
-    # assert isinstance(incidence, np.ndarray), 'incidence matrix must be numpy.ndarray object'
+    assert isinstance(incidence, np.ndarray) or sps.isspmatrix(incidence), 'Invalid incidence matrix'
+
+    # Convert incidence matrix to sparse format
     if not sps.isspmatrix(incidence):
         sp_incidence = sps.csr_matrix(incidence)
     else:
         sp_incidence = incidence
+
     n, m = sp_incidence.shape
     t = sp_incidence.nnz
 
+    # Elements of A, B need to be changed, so lil_matrix is more preferable
     A, B = sps.lil_matrix((t, n)), sps.lil_matrix((t, m))
     row_index, col_index = sp_incidence.nonzero()
     for idx, (row, col) in enumerate(zip(row_index, col_index)):
         A[idx, row] = 1
         B[idx, col] = 1
-    # for row in range(n):
-    #     for col in range(m):
-    #         if incidence[row, col] != 0:
-    #             A[total, row] = 1
-    #             B[total, col] = 1
-    #             total += 1
-    return A, B
+    return A.tocsr(), B.tocsr()
 
 # def from_hyper_edges(self):
 #     hyper_edges = self.hyper_edges
