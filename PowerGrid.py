@@ -6,7 +6,7 @@ import os
 
 
 # Read Power Grid network
-path = os.path.expanduser('~/Datasets/power.gml')
+path = './dataset/power.gml'
 g = nx.read_gml(path, label='id')
 
 # simulation parameters
