@@ -50,15 +50,21 @@ class Simulator():
         return nx.incidence_matrix(self.graph)
 
     def incidence_from_hyper_edge_list(self):
+        """
+        Get incidence matrix from hyper-edge list.
+
+        The shape of incidence matrix should be NxM, where N is number of nodes, and M number of hyper-edges.
+        C[i,j] = 1 if node i in hyper-edge j.
+        :return: incidence matrix
+        """
         assert self.hyper_edge_list, 'You need to set hyper_edge_list first'
-        hyper_edges = sorted(self.hyper_edge_list)
-        number_of_edges = len(hyper_edges)
+        hyper_edge_list = sorted(self.hyper_edge_list)
+        number_of_edges = len(hyper_edge_list)
         number_of_nodes = self.graph.number_of_nodes()
 
-        incidence = np.empty((number_of_nodes, number_of_edges))
-        # incidence = sps.lil_matrix((number_of_nodes, number_of_edges))
-        for idx, edge in enumerate(hyper_edges):
-            incidence[:, idx] = index_to_position(edge, number_of_nodes)
+        incidence = sps.lil_matrix((number_of_nodes, number_of_edges))
+        for edge_idx, edge in enumerate(hyper_edge_list):
+            incidence[edge, edge_idx] = 1
         return sps.csr_matrix(incidence)
 
     def auto_discover_hyper_edge(self, threshold):
@@ -137,6 +143,9 @@ class Simulator():
                 logging.debug('Progress {}'.format(100 * (i+1)/ max_iter))
         logging.debug('Mode: {}, ending for loop'.format(self.mode))
         return primal_gap, primal_residual, dual_residual
+# ================================================================================================
+# end of class definition
+# ================================================================================================
 
 
 def erdos_renyi(n_nodes, prob):
@@ -151,26 +160,6 @@ def erdos_renyi(n_nodes, prob):
     while not nx.is_connected(G):
         G = nx.erdos_renyi_graph(n_nodes, prob)
     return G
-
-def index_to_position(index, size):
-    """
-    Convert a list of index to positional vector.
-
-    Index begins from zero. Each element of index will correspond to one '1' in positional vector.
-
-    >>>> index_to_position([2, 3], 5)
-    array([0, 0, 1, 1, 0])
-    >>>> index_to_position([1], 3)
-    array([0, 1, 0])
-    :param index: list of index
-    :param size: size of positional vector
-    :return: positional vector
-    """
-    assert max(index) < size, 'Index out of bound'
-    pos_vec = np.zeros((size))
-    for i in index:
-        pos_vec[i] = 1
-    return pos_vec
 
 
 def incidence_to_ab(incidence):
@@ -197,25 +186,6 @@ def incidence_to_ab(incidence):
         A[idx, row] = 1
         B[idx, col] = 1
     return A.tocsr(), B.tocsr()
-
-# def from_hyper_edges(self):
-#     hyper_edges = self.hyper_edges
-#     edge_degree = np.array([len(edge) for edge in hyper_edges])
-#     total_degree = edge_degree.sum()
-#     number_of_edges = len(hyper_edges)
-#     number_of_nodes = self.graph.number_of_nodes()
-#     I_A, I_B = np.eye(number_of_nodes), np.eye(number_of_edges)
-#
-#     A, B = [], []
-#     for idx, edge in enumerate(hyper_edges):
-#         B += [list(I_B[idx])] * len(edge)
-#         for node in edge:
-#             A.append(list(I_A[node]))
-#     #
-#     # A = sorted(A, reverse=True)
-#     # B = [b for a,b in sorted(zip(A, B), key=itemgetter(0), reverse=True)]
-#     A, B = np.array(A), np.array(B)
-#     return A, B
 
 def check_hyper_edges(incidence, hyper_edges):
     """
@@ -346,3 +316,40 @@ def hyper_incidence(incidence, hyper_edges):
     #     :return: networkx graph object
     #     """
     #     #
+# def index_to_position(index, size):
+#     """
+#     Convert a list of index to positional vector.
+#
+#     Index begins from zero. Each element of index will correspond to one '1' in positional vector.
+#
+#     >>>> index_to_position([2, 3], 5)
+#     array([0, 0, 1, 1, 0])
+#     >>>> index_to_position([1], 3)
+#     array([0, 1, 0])
+#     :param index: list of index
+#     :param size: size of positional vector
+#     :return: positional vector
+#     """
+#     assert max(index) < size, 'Index out of bound'
+#     pos_vec = np.zeros((size))
+#     for i in index:
+#         pos_vec[i] = 1
+#     return pos_vec
+# def from_hyper_edges(self):
+#     hyper_edges = self.hyper_edges
+#     edge_degree = np.array([len(edge) for edge in hyper_edges])
+#     total_degree = edge_degree.sum()
+#     number_of_edges = len(hyper_edges)
+#     number_of_nodes = self.graph.number_of_nodes()
+#     I_A, I_B = np.eye(number_of_nodes), np.eye(number_of_edges)
+#
+#     A, B = [], []
+#     for idx, edge in enumerate(hyper_edges):
+#         B += [list(I_B[idx])] * len(edge)
+#         for node in edge:
+#             A.append(list(I_A[node]))
+#     #
+#     # A = sorted(A, reverse=True)
+#     # B = [b for a,b in sorted(zip(A, B), key=itemgetter(0), reverse=True)]
+#     A, B = np.array(A), np.array(B)
+#     return A, B
