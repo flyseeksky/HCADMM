@@ -105,42 +105,38 @@ class Simulator():
             # if current node not qualify, next
             if node not in qualified_node_set:
                 continue
-            all_neighbors = tuple(nx.all_neighbors(graph, node))
+            all_neighbors = tuple(sorted(list(nx.all_neighbors(graph, node))))
 
             # add one hyper-edge into list
             hyper_edge = [node] + list(all_neighbors)
-            hyper_edge_list.append(tuple(sorted(hyper_edge)))
+            edge_node = tuple(sorted(hyper_edge))
+            hyper_edge_list.append(edge_node)
 
             # mark all neighbors as not qualified
             qualified_node_set.difference_update(hyper_edge)
 
             # removing all edges from edge list
-            edges = set([tuple(sorted((node, neighbor))) for neighbor in all_neighbors])
+            # remember removing all edges bewteen nodes in one hyper-edge
+            edges = set([(node1, node2) for node1 in edge_node for node2 in edge_node if node1 < node2])
             remaining_edge_set.difference_update(edges)
-
-        # consider nodes that do not qualify
-        # for node in remaining_node_set:
-        #     for neighbor in nx.all_neighbors(graph, node):
-        #         hyper_edges.append(sorted([node, neighbor]))
-        #         remaining_node_set.difference_update(set(neighbor))
 
         # combining hyper edges and all remaining simple edges
         hyper_edge_list += list(remaining_edge_set)
         self.hyper_edge_list = sorted(hyper_edge_list)
         return self.hyper_edge_list
 
-    def erdos_renyi(self, prob):
-        """
-        randomly generate a connected graph using Erdos-Renyi model
-        :param n_nodes: number of nodes
-        :param prob: the probability of an edge
-        :return: an Networkx object
-        """
+def erdos_renyi(n_nodes, prob):
+    """
+    randomly generate a connected graph using Erdos-Renyi model
+    :param n_nodes: number of nodes
+    :param prob: the probability of an edge
+    :return: an Networkx object
+    """
 
-        G = nx.erdos_renyi_graph(self.n_nodes, prob)
-        while not nx.is_connected(G):
-            G = nx.erdos_renyi_graph(self.n_nodes, prob)
-        return G
+    G = nx.erdos_renyi_graph(n_nodes, prob)
+    while not nx.is_connected(G):
+        G = nx.erdos_renyi_graph(n_nodes, prob)
+    return G
 
 def index_to_position(index, size):
     """
