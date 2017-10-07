@@ -2,11 +2,11 @@ from Admm_simulator import Simulator
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+import os
 
 
 # Read Power Grid network
-# TODO find user HOME folder
-path = '../../Datasets/power.gml'
+path = os.path.expanduser('~/Datasets/power.gml')
 g = nx.read_gml(path, label='id')
 
 # simulation parameters
