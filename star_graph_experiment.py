@@ -13,7 +13,7 @@ x_opt = v.mean()
 x0 = np.random.randn(n_nodes)
 setting = {'penalty': c, 'max_iter':max_iter, 'objective':v, 'initial':x0}
 
-g = nx.path_graph(n_nodes)
+g = nx.star_graph(n_nodes - 1)
 sim = Simulator(g, simulation_setting=setting)
 
 # centralized
@@ -30,7 +30,7 @@ d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 
 marker_at = range(0, max_iter, 10)
-title_str = 'Line Graph, N={}'.format(n_nodes)
+title_str = 'Star Graph, N={}'.format(n_nodes)
 plt.figure(1)
 plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
 plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
