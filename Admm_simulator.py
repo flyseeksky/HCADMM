@@ -88,7 +88,7 @@ class Simulator():
 
             # add current hyper-edge into hyper-edge list
             hyper_edge = sorted([node] + list(all_neighbors))
-            hyper_edge_list.append(hyper_edge)
+            hyper_edge_list.append(tuple(hyper_edge))
 
             # mark all neighbors as not qualified
             qualified_node_set.difference_update(hyper_edge)
