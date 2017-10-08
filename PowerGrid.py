@@ -2,7 +2,6 @@ from Admm_simulator import Simulator
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-import os
 
 
 # Read Power Grid network
