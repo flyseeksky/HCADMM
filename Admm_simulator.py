@@ -105,34 +105,29 @@ class Simulator():
         return self.hyper_edge_list
 
     def run_least_squares(self):
-        # extract simulation settings
-        setting = self.simulation_setting
-        c, v = setting['penalty'], setting['objective']
-        x0 = setting['initial']
-        max_iter = setting['max_iter']
         logging.debug('=============== Mode: ' + self.mode + ' ====================')
 
-        # C = np.asarray(self.get_incidence())
+        # extract simulation settings
+        setting = self.simulation_setting
+        c, v, x0, max_iter = setting['penalty'], setting['objective'], setting['initial'], setting['max_iter']
+        x_opt = v.mean()
+
         C = self.get_incidence()
         A, B = self.incidence_to_ab(C)
         node_degree, edge_degree = np.squeeze(np.asarray(C.sum(axis=1))), np.squeeze(np.asarray(C.sum(axis=0)))
 
-        x_opt = v.mean()
-
+        # initial value
         z0 = C.T.dot(x0) / edge_degree
         alpha0 = np.zeros_like(x0)
-        primal_gap = []
-        primal_residual, dual_residual = [], []
-        x, z, alpha = x0, z0, alpha0
+        primal_gap, primal_residual, dual_residual = [], [], []
+
         logging.debug('Mode: {}, starting for-loop'.format(self.mode))
+        x, z, alpha = x0, z0, alpha0
         for i in range(max_iter):
-            z_prev = z
-            # TODO optimize: eliminate pinv
-            # x = LA.pinv(np.eye(n_nodes) + c * D_N).dot(v - alpha + c * C.dot(z))
-            # z = LA.inv(D_M).dot(C.T).dot(x)
+            z_prev = z  # save for computing dual residual
             x = (v - alpha + c * C.dot(z)) / (1 + c * node_degree)
             z = C.T.dot(x) / edge_degree
-            alpha += c * (node_degree *x - C.dot(z))
+            alpha += c * (node_degree * x - C.dot(z))
 
             primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
             primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
@@ -141,6 +136,7 @@ class Simulator():
             # debug printing
             if i % 20 == 19:
                 logging.debug('Progress {}'.format(100 * (i+1)/ max_iter))
+
         logging.debug('Mode: {}, ending for loop'.format(self.mode))
         return primal_gap, primal_residual, dual_residual
 
