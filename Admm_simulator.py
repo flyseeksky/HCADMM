@@ -1,10 +1,10 @@
-import numpy as np
-from collections import Counter
-import numpy.linalg as LA
-import networkx as nx
+#!/usr/local/bin/python3
+import logging
 from operator import itemgetter
 import scipy.sparse as sps
-import logging
+import numpy as np
+import numpy.linalg as LA
+import networkx as nx
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
@@ -13,8 +13,7 @@ class Simulator():
         assert isinstance(graph, nx.Graph), 'graph must be a networkx Graph object'
         self.graph = graph
         self.hyper_edge_list = hyper_edges
-        self.mode = mode  # how hyper-edges are generated
-        # for simulation
+        self.mode = mode
         self.simulation_setting = simulation_setting
 
     def get_incidence(self, auto_discover=True):
@@ -39,14 +38,12 @@ class Simulator():
         if auto_discover:
             # TODO auto threshold
             self.auto_discover_hyper_edge(2)
-        incidence = self.incidence_from_hyper_edge_list()
-        return incidence
+        return self.incidence_from_hyper_edge_list()
 
     def _get_c_incidence(self):
         return np.ones((self.graph.number_of_nodes(),1))
 
     def _get_d_incidence(self):
-        # return nx.incidence_matrix(self.graph).todense()
         return nx.incidence_matrix(self.graph)
 
     def incidence_from_hyper_edge_list(self):
@@ -68,35 +65,37 @@ class Simulator():
         return sps.csr_matrix(incidence)
 
     def auto_discover_hyper_edge(self, threshold):
-        graph = self.graph
-        assert isinstance(graph, nx.Graph), 'Simulator.graph must be instance of networkx.Graph'
+        """
+        Automatically find patterns to build a hybrid model.
+        """
+        assert isinstance(self.graph, nx.Graph), 'Simulator.graph must be instance of networkx.Graph'
 
-        node_degree_list = sorted(list(graph.degree), key=itemgetter(1), reverse=True)
+        node_degree_list = sorted(list(self.graph.degree), key=itemgetter(1), reverse=True)
         # TODO fix number of local centers
         # consider according to descending degree order
         node_degree_list_to_consider = [nd for nd in node_degree_list if nd[1] >= threshold]
         qualified_node_set = set([nd[0] for nd in node_degree_list_to_consider])
-        all_edge_set = set(graph.edges)
+        all_edge_set = set(self.graph.edges)
 
         hyper_edge_list = []
         remaining_edge_set = all_edge_set.copy()
-        for node, degree in node_degree_list_to_consider:
+        for node, _ in node_degree_list_to_consider:
             # if current node not qualify, next
             if node not in qualified_node_set:
                 continue
-            all_neighbors = tuple(sorted(list(nx.all_neighbors(graph, node))))
 
-            # add one hyper-edge into list
-            hyper_edge = [node] + list(all_neighbors)
-            edge_node = tuple(sorted(hyper_edge))
-            hyper_edge_list.append(edge_node)
+            all_neighbors = tuple(sorted(nx.all_neighbors(self.graph, node)))
+
+            # add current hyper-edge into hyper-edge list
+            hyper_edge = sorted([node] + list(all_neighbors))
+            hyper_edge_list.append(hyper_edge)
 
             # mark all neighbors as not qualified
             qualified_node_set.difference_update(hyper_edge)
 
             # removing all edges from edge list
-            # remember removing all edges bewteen nodes in one hyper-edge
-            edges = set([(node1, node2) for node1 in edge_node for node2 in edge_node if node1 < node2])
+            # remember removing all the edges bewteen nodes in one hyper-edge
+            edges = set([(node1, node2) for node1 in hyper_edge for node2 in hyper_edge if node1 < node2])
             remaining_edge_set.difference_update(edges)
 
         # combining hyper edges and all remaining simple edges
