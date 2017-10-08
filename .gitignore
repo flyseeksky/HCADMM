@@ -1,3 +1,4 @@
 */
-!*.py
-#!.idea/
+!/*.py
+!/.gitignore
+!/dataset/
