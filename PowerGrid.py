@@ -29,12 +29,12 @@ c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
 sim.mode = 'hybrid'
-sim.simulation_setting['penalty'] = 1
+sim.simulation_setting['penalty'] = .1
 h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
 sim.mode = 'decentralized'
-sim.simulation_setting['penalty'] = 1
+sim.simulation_setting['penalty'] = .1
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 #plotting figures
