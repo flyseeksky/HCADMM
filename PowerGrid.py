@@ -6,12 +6,13 @@ import networkx as nx
 
 # Read Power Grid network
 path = './dataset/power.gml'
-g = nx.read_gml(path, label='id')
+# g = nx.read_gml(path, label='id')
+g = nx.karate_club_graph()
 
 # simulation parameters
 n_nodes = g.order()                     # number of nodes
 max_iter = 200                          # maximum number of iterations
-c = 20                                  # penalty parameter in ADMM
+c =  8                                # penalty parameter in ADMM
 v = np.random.rand(n_nodes) * 10 + 10
 x_opt = v.mean()
 x0 = np.random.randn(n_nodes)
@@ -23,14 +24,17 @@ sim = Simulator(g, simulation_setting=setting)
 
 # centralized
 sim.mode = 'centralized'
+sim.simulation_setting['penalty']  = 1
 c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
 sim.mode = 'hybrid'
+sim.simulation_setting['penalty'] = 1
 h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
 sim.mode = 'decentralized'
+sim.simulation_setting['penalty'] = 1
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 #plotting figures
@@ -47,18 +51,18 @@ plt.legend()
 
 
 plt.figure(2)
-plt.plot(d_primal_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.plot(c_primal_residual, '-s', lw=2, label='centralized', markevery=marker_at)
-plt.plot(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
+plt.semilogy(d_primal_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
+plt.semilogy(c_primal_residual, '-s', lw=2, label='centralized', markevery=marker_at)
+plt.semilogy(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
 plt.xlabel('Iterations')
 plt.ylabel('Primal residual')
 plt.legend()
 
 plt.figure(3)
-plt.plot(d_dual_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.plot(c_dual_residual, '-s', lw=2, label='centralized', markevery=marker_at)
-plt.plot(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
+plt.semilogy(d_dual_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
+plt.semilogy(c_dual_residual, '-s', lw=2, label='centralized', markevery=marker_at)
+plt.semilogy(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
 plt.xlabel('Iterations')
 plt.ylabel('Dual residual')

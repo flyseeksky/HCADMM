@@ -3,7 +3,7 @@ import logging
 from operator import itemgetter
 import scipy.sparse as sps
 import numpy as np
-import numpy.linalg as LA
+import scipy.linalg as LA
 import networkx as nx
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -129,8 +129,8 @@ class Simulator():
             alpha += c * (node_degree * x - C.dot(z))
 
             primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
-            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)) + np.finfo(float).eps)
-            dual_residual.append(LA.norm(c * C.dot(z - z_prev)) + np.finfo(float).eps)
+            primal_residual.append(LA.norm(A.dot(x) - B.dot(z)))
+            dual_residual.append(LA.norm(c * C.dot(z - z_prev)))
 
             # debug printing
             if i % 20 == 19:
