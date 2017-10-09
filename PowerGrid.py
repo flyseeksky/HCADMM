@@ -11,12 +11,11 @@ g = nx.karate_club_graph()
 
 # simulation parameters
 n_nodes = g.order()                     # number of nodes
-max_iter = 200                          # maximum number of iterations
-c =  8                                # penalty parameter in ADMM
+
 v = np.random.rand(n_nodes) * 10 + 10
 x_opt = v.mean()
-x0 = np.random.randn(n_nodes)
-setting = {'penalty': c, 'max_iter':max_iter, 'objective':v, 'initial':x0}
+
+setting = {'penalty': 1, 'max_iter': 200, 'objective': v, 'initial': np.random.randn(n_nodes)}
 
 
 # start simulation
@@ -24,27 +23,27 @@ sim = Simulator(g, simulation_setting=setting)
 
 # centralized
 sim.mode = 'centralized'
-sim.simulation_setting['penalty']  = 1
+sim.simulation_setting['penalty'] = 1
 c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
 sim.mode = 'hybrid'
-sim.simulation_setting['penalty'] = .1
+sim.simulation_setting['penalty'] = 1
 h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
 sim.mode = 'decentralized'
-sim.simulation_setting['penalty'] = .1
+sim.simulation_setting['penalty'] = 1
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 #plotting figures
-marker_at = range(0, max_iter, 10)
+marker_at = range(0, setting['max_iter'], setting['max_iter'] // 20)
 title_str = 'US Power Grid Network, Nodes: {}, Edges: {}'.format(g.order(), g.number_of_edges())
 plt.figure(1)
 plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
 plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
 plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
-plt.ylabel('Optimality gap $||x - x^\star||^2$')
+plt.ylabel('Relative Optimality gap $||x - x^\star||^2/||x^\star||^2$')
 plt.xlabel('Iterations')
 plt.title(title_str)
 plt.legend()

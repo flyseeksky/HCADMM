@@ -133,7 +133,8 @@ class Simulator():
             dual_residual.append(LA.norm(c * C.dot(z - z_prev)))
 
             # debug printing
-            if i % 20 == 19:
+            step = max_iter // 10
+            if i % step == step - 1:
                 logging.debug('Progress {}'.format(100 * (i+1)/ max_iter))
 
         logging.debug('Mode: {}, ending for loop'.format(self.mode))
