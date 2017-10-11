@@ -56,23 +56,23 @@ class TestIncidenceFromHyperEdge(object):
 
         hyper_edge_list = [(0,1,2,3,4)]
         sim.hyper_edge_list = hyper_edge_list
-        incidence = np.array(sim.incidence_from_hyper_edge_list())
+        incidence = sim.incidence_from_hyper_edge_list()
         target = np.ones(5)
-        assert np.all(target == incidence)
+        assert np.all(target == incidence.todense())
 
         hyper_edge_list = [(0,1,2),(2,3,4)]
         sim.hyper_edge_list = hyper_edge_list
-        incidence = np.array(sim.incidence_from_hyper_edge_list())
+        incidence = sim.incidence_from_hyper_edge_list()
         target = np.array([[1,0]] * 2 + [[1,1]] + [[0,1]] * 2)
-        assert np.all(target == incidence)
+        assert np.all(target == incidence.todense())
 
         hyper_edge_list = [(0, 1, 2), (2, 3)]
         gg = nx.path_graph(4)
         sim = Simulator(gg)
         sim.hyper_edge_list = hyper_edge_list
-        incidence = np.array(sim.incidence_from_hyper_edge_list())
+        incidence = sim.incidence_from_hyper_edge_list()
         target = np.array([[1, 0]] * 2 + [[1, 1]] + [[0, 1]])
-        assert np.all(target == incidence)
+        assert np.all(target == incidence.todense())
 
     def test_hybrid_graph(self):
         g = nx.Graph()
@@ -84,67 +84,67 @@ class TestIncidenceFromHyperEdge(object):
         assert np.all(C == target)
 
 
-class TestUtilities(object):
-    def test_hyper_incidence(self):
-        A = np.array([[1, 0, 0, 0],
-                      [1, 1, 1, 0],
-                      [0, 1, 0, 0],
-                      [0, 0, 1, 1],
-                      [0, 0, 0, 1]])
-        B = hyper_incidence(A, [[0, 1, 2], [3]])
-        C = np.array([[1, 0], [1, 0], [1, 0], [1, 1], [0, 1]])
-        C2 = np.array([[1], [1], [1], [1], [1]])
-        B1 = hyper_incidence(A, [0, 1, 2, 3])
-        B2 = hyper_incidence(A, [[0, 1, 2, 3]])
-        assert np.all(B == C)
-        assert np.all(B1 == A)
-        assert np.all(B2 == C2)
-
-    def test_nodetoedgelist(self):
-        A = np.array([[1, 0, 0, 0],
-                      [1, 1, 1, 0],
-                      [0, 1, 0, 0],
-                      [0, 0, 1, 1],
-                      [0, 0, 0, 1]])
-        node_list = [[0, 1, 2, 3], [3, 4]]
-        edge_list = node_to_edge(A, node_list)
-        target = [[0, 1, 2], [3]]
-        assert edge_list == target
-
-    def test_convertadj(self):
-        A = np.array([[1, 0, 0],
-                      [1, 1, 0],
-                      [0, 1, 1],
-                      [0, 0, 1]])
-        edge_list = [[0, 1], [2]]
-        hyper_A = hyper_incidence(A, edge_list)
-        target = np.array([[1, 0], [1, 0], [1, 1], [0, 1]])
-
-        assert np.all(hyper_A == target)
-
-    def test_incidence_to_AB(self):
-        g = nx.Graph()
-        g.add_edges_from([(0, 1), (1, 2), (1, 3), (3, 4)])
-        C = nx.incidence_matrix(g)
-        A, B = incidence_to_ab(C.todense())
-        AA = np.array([[1, 0, 0, 0, 0],
-                       [0, 1, 0, 0, 0],
-                       [0, 1, 0, 0, 0],
-                       [0, 1, 0, 0, 0],
-                       [0, 0, 1, 0, 0],
-                       [0, 0, 0, 1, 0],
-                       [0, 0, 0, 1, 0],
-                       [0, 0, 0, 0, 1]])
-        BB = np.array([[1, 0, 0, 0],
-                       [1, 0, 0, 0],
-                       [0, 1, 0, 0],
-                       [0, 0, 1, 0],
-                       [0, 1, 0, 0],
-                       [0, 0, 1, 0],
-                       [0, 0, 0, 1],
-                       [0, 0, 0, 1]])
-        assert np.all(A == AA)
-        assert np.all(B == BB)
+# class TestUtilities(object):
+#     def test_hyper_incidence(self):
+#         A = np.array([[1, 0, 0, 0],
+#                       [1, 1, 1, 0],
+#                       [0, 1, 0, 0],
+#                       [0, 0, 1, 1],
+#                       [0, 0, 0, 1]])
+#         B = hyper_incidence(A, [[0, 1, 2], [3]])
+#         C = np.array([[1, 0], [1, 0], [1, 0], [1, 1], [0, 1]])
+#         C2 = np.array([[1], [1], [1], [1], [1]])
+#         B1 = hyper_incidence(A, [0, 1, 2, 3])
+#         B2 = hyper_incidence(A, [[0, 1, 2, 3]])
+#         assert np.all(B == C)
+#         assert np.all(B1 == A)
+#         assert np.all(B2 == C2)
+#
+#     def test_nodetoedgelist(self):
+#         A = np.array([[1, 0, 0, 0],
+#                       [1, 1, 1, 0],
+#                       [0, 1, 0, 0],
+#                       [0, 0, 1, 1],
+#                       [0, 0, 0, 1]])
+#         node_list = [[0, 1, 2, 3], [3, 4]]
+#         edge_list = node_to_edge(A, node_list)
+#         target = [[0, 1, 2], [3]]
+#         assert edge_list == target
+#
+#     def test_convertadj(self):
+#         A = np.array([[1, 0, 0],
+#                       [1, 1, 0],
+#                       [0, 1, 1],
+#                       [0, 0, 1]])
+#         edge_list = [[0, 1], [2]]
+#         hyper_A = hyper_incidence(A, edge_list)
+#         target = np.array([[1, 0], [1, 0], [1, 1], [0, 1]])
+#
+#         assert np.all(hyper_A == target)
+#
+#     def test_incidence_to_AB(self):
+#         g = nx.Graph()
+#         g.add_edges_from([(0, 1), (1, 2), (1, 3), (3, 4)])
+#         C = nx.incidence_matrix(g)
+#         A, B = incidence_to_ab(C.todense())
+#         AA = np.array([[1, 0, 0, 0, 0],
+#                        [0, 1, 0, 0, 0],
+#                        [0, 1, 0, 0, 0],
+#                        [0, 1, 0, 0, 0],
+#                        [0, 0, 1, 0, 0],
+#                        [0, 0, 0, 1, 0],
+#                        [0, 0, 0, 1, 0],
+#                        [0, 0, 0, 0, 1]])
+#         BB = np.array([[1, 0, 0, 0],
+#                        [1, 0, 0, 0],
+#                        [0, 1, 0, 0],
+#                        [0, 0, 1, 0],
+#                        [0, 1, 0, 0],
+#                        [0, 0, 1, 0],
+#                        [0, 0, 0, 1],
+#                        [0, 0, 0, 1]])
+#         assert np.all(A == AA)
+#         assert np.all(B == BB)
 
             # def test_incidence_to_AB_another(self):
             #     g = nx.Graph().add_edges_from([(0, 1), (1, 2), (1, 3), (3, 4)])

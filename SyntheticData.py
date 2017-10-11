@@ -4,17 +4,15 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
+# Line graph with a large diameter needs more iterations to achieve certain accuracy
 # simulation parameters
-n_nodes = 200     # number of nodes
-max_iter = 200   # maximum number of iterations
-c = 30           # penalty parameter in ADMM
-v = np.random.rand(n_nodes) * 10 + 10
+n_nodes = 20     # number of nodes
+v = np.random.rand(n_nodes) * 10 + 1 * np.random.randn((n_nodes))
 x_opt = v.mean()
-x0 = np.random.randn(n_nodes)
-setting = {'penalty': c, 'max_iter':max_iter, 'objective':v, 'initial':x0}
+setting = {'penalty':1, 'max_iter': 1000, 'objective':v, 'initial':np.random.randn(n_nodes)}
 
 # generate graph
-graph_type = 'Cycle Graph'
+graph_type = 'Line Graph'
 
 if graph_type == 'Line Graph':
     g = nx.path_graph(n_nodes)
@@ -33,42 +31,45 @@ sim = Simulator(g, simulation_setting=setting)
 
 # centralized
 sim.mode = 'centralized'
+sim.simulation_setting['penalty'] = 1
 c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
 sim.mode = 'hybrid'
+sim.simulation_setting['penalty'] = .9
 h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
 sim.mode = 'decentralized'
+sim.simulation_setting['penalty'] = 1
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 
-marker_at = range(0, max_iter, 10)
+marker_at = range(0, setting['max_iter'], setting['max_iter'] // 10)
 title_str = '{}, N={}'.format(graph_type, n_nodes)
 plt.figure(1)
 plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
 plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
 plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
-plt.ylabel('Optimality gap $||x - x^\star||^2$')
+plt.ylabel('Relative Optimality gap $||x - x^\star||^2/||x^\star||^2$')
 plt.xlabel('Iterations')
 plt.title(title_str)
 plt.legend()
 
 
 plt.figure(2)
-plt.plot(d_primal_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.plot(c_primal_residual, '-s', lw=2, label='centralized', markevery=marker_at)
-plt.plot(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
+plt.semilogy(d_primal_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
+plt.semilogy(c_primal_residual, '-s', lw=2, label='centralized', markevery=marker_at)
+plt.semilogy(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
 plt.xlabel('Iterations')
 plt.ylabel('Primal residual')
 plt.legend()
 
 plt.figure(3)
-plt.plot(d_dual_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.plot(c_dual_residual, '-s', lw=2, label='centralized', markevery=marker_at)
-plt.plot(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
+plt.semilogy(d_dual_residual, '-d', lw=2, label='decentralized', markevery=marker_at)
+plt.semilogy(c_dual_residual, '-s', lw=2, label='centralized', markevery=marker_at)
+plt.semilogy(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
 plt.xlabel('Iterations')
 plt.ylabel('Dual residual')
