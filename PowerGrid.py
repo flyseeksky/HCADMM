@@ -11,7 +11,7 @@ g = nx.karate_club_graph()
 
 # simulation parameters
 n_nodes = g.order()                     # number of nodes
-max_iter = 200                          # maximum number of iterations
+max_iter = 150                          # maximum number of iterations
 c =  8                                # penalty parameter in ADMM
 v = np.random.rand(n_nodes) * 10 + 10
 x_opt = v.mean()
@@ -29,12 +29,12 @@ c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
 sim.mode = 'hybrid'
-sim.simulation_setting['penalty'] = 1
+sim.simulation_setting['penalty'] = .8
 h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
 sim.mode = 'decentralized'
-sim.simulation_setting['penalty'] = 1
+sim.simulation_setting['penalty'] = .5
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 #plotting figures
@@ -46,6 +46,7 @@ plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
 plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.ylabel('Optimality gap $||x - x^\star||^2$')
 plt.xlabel('Iterations')
+plt.ylim(ymin=1e-8)
 plt.title(title_str)
 plt.legend()
 
@@ -55,6 +56,7 @@ plt.semilogy(d_primal_residual, '-d', lw=2, label='decentralized', markevery=mar
 plt.semilogy(c_primal_residual, '-s', lw=2, label='centralized', markevery=marker_at)
 plt.semilogy(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
+plt.ylim(ymin=1e-8)
 plt.xlabel('Iterations')
 plt.ylabel('Primal residual')
 plt.legend()
@@ -64,6 +66,7 @@ plt.semilogy(d_dual_residual, '-d', lw=2, label='decentralized', markevery=marke
 plt.semilogy(c_dual_residual, '-s', lw=2, label='centralized', markevery=marker_at)
 plt.semilogy(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
+plt.ylim(ymin=1e-8)
 plt.xlabel('Iterations')
 plt.ylabel('Dual residual')
 plt.legend()
