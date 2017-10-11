@@ -36,7 +36,7 @@ c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
 sim.mode = 'hybrid'
-sim.simulation_setting['penalty'] = .9
+sim.simulation_setting['penalty'] = .33
 h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
@@ -54,6 +54,7 @@ plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.ylabel('Relative Optimality gap $||x - x^\star||^2/||x^\star||^2$')
 plt.xlabel('Iterations')
 plt.title(title_str)
+plt.ylim(ymin=1e-8)
 plt.legend()
 
 
@@ -64,6 +65,7 @@ plt.semilogy(h_primal_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
 plt.xlabel('Iterations')
 plt.ylabel('Primal residual')
+plt.ylim(ymin=1e-8)
 plt.legend()
 
 plt.figure(3)
@@ -73,6 +75,7 @@ plt.semilogy(h_dual_residual, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.title(title_str)
 plt.xlabel('Iterations')
 plt.ylabel('Dual residual')
+plt.ylim(ymin=1e-8)
 plt.legend()
 
 
