@@ -120,7 +120,7 @@ class Simulator():
         alpha0 = np.zeros_like(x0)
         primal_gap, primal_residual, dual_residual = [], [], []
 
-        logging.debug('Mode: {}, starting for-loop'.format(self.mode))
+        logging.debug('Mode: %s, starting for-loop', self.mode)
         x, z, alpha = x0, z0, alpha0
         for i in range(max_iter):
             z_prev = z  # save for computing dual residual
@@ -135,13 +135,13 @@ class Simulator():
             # debug printing
             step = max_iter // 10
             if i % step == step - 1:
-                logging.debug('Progress {}'.format(100 * (i+1)/ max_iter))
+                logging.debug('Progress %.1f', 100 * (i+1)/ max_iter)
 
-        logging.debug('Mode: {}, ending for loop'.format(self.mode))
+        logging.debug('Mode: %s, ending for loop', self.mode)
         return primal_gap, primal_residual, dual_residual
 
     @staticmethod
-    def erdos_renyi(n_nodes, prob):
+    def erdos_renyi(n_nodes, prob, seed=None):
         """
         randomly generate a connected graph using Erdos-Renyi model
         :param n_nodes: number of nodes
@@ -149,9 +149,9 @@ class Simulator():
         :return: an Networkx object
         """
 
-        G = nx.erdos_renyi_graph(n_nodes, prob)
+        G = nx.erdos_renyi_graph(n_nodes, prob, seed=seed)
         while not nx.is_connected(G):
-            G = nx.erdos_renyi_graph(n_nodes, prob)
+            G = nx.erdos_renyi_graph(n_nodes, prob, seed=seed)
         return G
 
     @staticmethod

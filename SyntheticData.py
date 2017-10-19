@@ -6,55 +6,63 @@ import networkx as nx
 
 # Line graph with a large diameter needs more iterations to achieve certain accuracy
 # simulation parameters
-n_nodes = 500     # number of nodes
-v = np.random.rand(n_nodes) * 10 + 1 * np.random.randn((n_nodes))
+np.random.seed(1)
+n_nodes = 50     # number of nodes
+v = np.random.randint(1, 10) + .1 * np.random.randn((n_nodes))
 x_opt = v.mean()
-setting = {'penalty': 1, 'max_iter': 200, 'objective': v, 'initial':np.random.randn(n_nodes)}
+np.random.seed(10)
 
 # generate graph
-graph_type = 'Erdos Renyi'
+graph_type = 'Line Graph'
+
 
 if graph_type == 'Line Graph':
+    best_penalty = (1, 7, 8)
+    max_iter = 400
+    filename = 'line_graph.pdf'
     g = nx.path_graph(n_nodes)
 elif graph_type == 'Erdos Renyi':
-    prob = .05
-    g = Simulator.erdos_renyi(n_nodes, prob)
+    prob = .02
+    g = Simulator.erdos_renyi(n_nodes, prob, seed=1000)
 elif graph_type == 'Star Graph':
     g = nx.star_graph(n_nodes - 1)
 elif graph_type == 'Cycle Graph':
     g = nx.cycle_graph(n_nodes)
 else:
     raise Exception('Unsupported graph type')
+title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes, g.number_of_edges())
+
 
 # start simulation
+setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 'initial': np.random.randn(n_nodes)}
 sim = Simulator(g, simulation_setting=setting)
 
 # centralized
 sim.mode = 'centralized'
-sim.simulation_setting['penalty'] = 1
+sim.simulation_setting['penalty'] = best_penalty[0]
 c_opt_gap, c_primal_residual, c_dual_residual = sim.run_least_squares()
 
 # hybrid
 sim.mode = 'hybrid'
-sim.simulation_setting['penalty'] = .2
+sim.simulation_setting['penalty'] = best_penalty[1]
 h_opt_gap, h_primal_residual, h_dual_residual = sim.run_least_squares()
 
 # decentralized ADMM
 sim.mode = 'decentralized'
-sim.simulation_setting['penalty'] = .05
+sim.simulation_setting['penalty'] = best_penalty[2]
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 
 marker_at = range(0, setting['max_iter'], setting['max_iter'] // 10)
-title_str = '{}, N={}'.format(graph_type, n_nodes)
-f1 = plt.figure(1)
+fig = plt.figure(1, figsize=(8,6))
 plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
 plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
 plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
-plt.ylabel('Relative Optimality gap $||x - x^\star||^2/||x^\star||^2$')
+plt.ylabel('Relative accuracy $||x - x^\star||^2/||x^\star||^2$')
 plt.xlabel('Iterations')
-plt.title(title_str)
-plt.ylim(ymin=1e-8)
+# plt.title(title_str)
+plt.ylim(ymin=1e-5)
+# plt.grid()
 plt.legend()
 
 
@@ -76,7 +84,10 @@ plt.legend()
 # plt.xlabel('Iterations')
 # plt.ylabel('Dual residual')
 # plt.ylim(ymin=1e-8)
+# plt.grid()
 # plt.legend()
 
-f1.savefig(graph_type + '.pdf', bbox_inches='tight')
+# f1.savefig(graph_type + '.pdf', bbox_inches='tight')
+fig.tight_layout()
+fig.savefig(filename, bbox='tight', pad_inches=0)
 plt.show()
