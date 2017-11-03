@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 class Simulator():
-    def __init__(self, graph, hyper_edges=None, mode='', simulation_setting={}):
+    def __init__(self, graph, hyper_edges=None, mode='', simulation_setting=None):
         assert isinstance(graph, nx.Graph), 'graph must be a networkx Graph object'
         self.graph = graph
         self.hyper_edge_list = hyper_edges
@@ -113,7 +113,13 @@ class Simulator():
 
         C = self.get_incidence()
         A, B = self.incidence_to_ab(C)
+        # node_degree and edge_degree are 1D vectors, to be compatible with numpy broadcasting rules
+        # reshape them as (-1, 1), which is a 2D vector
         node_degree, edge_degree = np.squeeze(np.asarray(C.sum(axis=1))), np.squeeze(np.asarray(C.sum(axis=0)))
+
+        # the reason that there is no need to expand C, A, B to block structures is because of this equality:
+        # AXB = (A kron B^T) vec(X)
+        # therefore, z = C^T x = C^T vec(X) = (C kron I)^T vec(X) = C^T X I = C^T X
 
         # initial value
         z0 = C.T.dot(x0) / edge_degree.reshape(-1, 1)

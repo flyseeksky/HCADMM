@@ -9,7 +9,7 @@ import networkx as nx
 np.random.seed(1)
 n_nodes = 50     # number of nodes
 d = 3            # dimension of variable at each node
-v = np.random.randn(n_nodes, d)
+v = np.random.rand(n_nodes, d)
 x_opt = v.mean()
 np.random.seed(10)
 
@@ -18,9 +18,8 @@ graph_type = 'Line Graph'
 
 
 if graph_type == 'Line Graph':
-    best_penalty = (1, 7, 8)
-    max_iter = 600
-    filename = 'line_graph.pdf'
+    best_penalty = (1, 6.75, 8.95)
+    max_iter = 500
     g = nx.path_graph(n_nodes)
 elif graph_type == 'Erdos Renyi':
     prob = .02
@@ -55,7 +54,7 @@ d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 
 marker_at = range(0, setting['max_iter'], setting['max_iter'] // 20)
-fig = plt.figure(1, figsize=(8,6))
+fig = plt.figure(1, figsize=(8, 6))
 plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
 plt.semilogy(c_opt_gap, '--', lw=2)
 plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
@@ -90,5 +89,5 @@ plt.legend()
 
 # f1.savefig(graph_type + '.pdf', bbox_inches='tight')
 fig.tight_layout()
-fig.savefig(filename, bbox='tight', pad_inches=0)
+fig.savefig(graph_type + '.pdf', bbox='tight', pad_inches=0)
 plt.show()
