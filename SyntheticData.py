@@ -8,7 +8,8 @@ import networkx as nx
 # simulation parameters
 np.random.seed(1)
 n_nodes = 50     # number of nodes
-v = np.random.randint(1, 10) + .1 * np.random.randn((n_nodes))
+d = 3            # dimension of variable at each node
+v = np.random.randn(n_nodes, d)
 x_opt = v.mean()
 np.random.seed(10)
 
@@ -18,7 +19,7 @@ graph_type = 'Line Graph'
 
 if graph_type == 'Line Graph':
     best_penalty = (1, 7, 8)
-    max_iter = 400
+    max_iter = 600
     filename = 'line_graph.pdf'
     g = nx.path_graph(n_nodes)
 elif graph_type == 'Erdos Renyi':
@@ -34,7 +35,7 @@ title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes, g.number_of_e
 
 
 # start simulation
-setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 'initial': np.random.randn(n_nodes)}
+setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 'initial': np.random.randn(n_nodes, d)}
 sim = Simulator(g, simulation_setting=setting)
 
 # centralized
@@ -53,10 +54,10 @@ sim.simulation_setting['penalty'] = best_penalty[2]
 d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
 
 
-marker_at = range(0, setting['max_iter'], setting['max_iter'] // 10)
+marker_at = range(0, setting['max_iter'], setting['max_iter'] // 20)
 fig = plt.figure(1, figsize=(8,6))
 plt.semilogy(d_opt_gap, '-d', lw=2, label='decentralized', markevery=marker_at)
-plt.semilogy(c_opt_gap, '-s', lw=2, label='centralized', markevery=marker_at)
+plt.semilogy(c_opt_gap, '--', lw=2)
 plt.semilogy(h_opt_gap, '-o', lw=2, label='hybrid', markevery=marker_at)
 plt.ylabel('Relative accuracy $||x - x^\star||^2/||x^\star||^2$')
 plt.xlabel('Iterations')
