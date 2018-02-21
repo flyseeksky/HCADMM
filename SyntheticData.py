@@ -14,7 +14,7 @@ x_opt = v.mean()
 np.random.seed(10)
 
 # generate graph
-graph_type = 'Line Graph'
+graph_type = 'Star Graph'
 
 
 if graph_type == 'Line Graph':
@@ -22,9 +22,13 @@ if graph_type == 'Line Graph':
     max_iter = 500
     g = nx.path_graph(n_nodes)
 elif graph_type == 'Erdos Renyi':
-    prob = .02
+    max_iter = 500
+    best_penalty = (1, 6.75, 8.95)
+    prob = .1
     g = Simulator.erdos_renyi(n_nodes, prob, seed=1000)
 elif graph_type == 'Star Graph':
+    max_iter = 50
+    best_penalty = (1, 2, 2)
     g = nx.star_graph(n_nodes - 1)
 elif graph_type == 'Cycle Graph':
     g = nx.cycle_graph(n_nodes)
@@ -34,7 +38,7 @@ title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes, g.number_of_e
 
 
 # start simulation
-setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 'initial': np.random.randn(n_nodes, d)}
+setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 'initial': 0 * np.random.randn(n_nodes, d)}
 sim = Simulator(g, simulation_setting=setting)
 
 # centralized
