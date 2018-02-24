@@ -5,7 +5,8 @@ import scipy.sparse as sps
 import numpy as np
 import scipy.linalg as LA
 import networkx as nx
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class Simulator():
@@ -20,8 +21,10 @@ class Simulator():
         """
         Get incidence matrix for current graph with given mode.
 
-        :param mode: specify how the algorithm would be run, must be one of hybrid, centralized, decentralized.
-        :param auto_discover: only valid for hybrid mode, controlling whether or not to use auto discovery hyper edges algorithm
+        :param mode: specify how the algorithm would be run, must be one of 
+                     hybrid, centralized, decentralized.
+        :param auto_discover: only valid for hybrid mode, controlling 
+                  whether or not to use auto discovery hyper edges algorithm
         :return: incidence matrix
         """
         assert self.mode != '', 'You need to set mode first'
@@ -50,7 +53,8 @@ class Simulator():
         """
         Get incidence matrix from hyper-edge list.
 
-        The shape of incidence matrix should be NxM, where N is number of nodes, and M number of hyper-edges.
+        The shape of incidence matrix should be NxM, where N is number of 
+        nodes, and M number of hyper-edges.
         C[i,j] = 1 if node i in hyper-edge j.
         :return: incidence matrix
         """
@@ -68,12 +72,15 @@ class Simulator():
         """
         Automatically find patterns to build a hybrid model.
         """
-        assert isinstance(self.graph, nx.Graph), 'Simulator.graph must be instance of networkx.Graph'
+        assert isinstance(self.graph, nx.Graph), 'Simulator.graph must'
+        'be instance of networkx.Graph'
 
-        node_degree_list = sorted(list(self.graph.degree), key=itemgetter(1), reverse=True)
+        node_degree_list = sorted(list(self.graph.degree), 
+                                  key=itemgetter(1), reverse=True)
         # TODO fix number of local centers
         # consider according to descending degree order
-        node_degree_list_to_consider = [nd for nd in node_degree_list if nd[1] >= threshold]
+        node_degree_list_to_consider = [nd for nd in node_degree_list 
+                                        if nd[1] >= threshold]
         qualified_node_set = set([nd[0] for nd in node_degree_list_to_consider])
         all_edge_set = set(self.graph.edges)
 
@@ -95,7 +102,8 @@ class Simulator():
 
             # removing all edges from edge list
             # remember removing all the edges bewteen nodes in one hyper-edge
-            edges = set([(node1, node2) for node1 in hyper_edge for node2 in hyper_edge if node1 < node2])
+            edges = set([(node1, node2) for node1 in hyper_edge for node2 in 
+                         hyper_edge if node1 < node2])
             remaining_edge_set.difference_update(edges)
 
         # combining hyper edges and all remaining simple edges
@@ -104,20 +112,24 @@ class Simulator():
         return self.hyper_edge_list
 
     def run_least_squares(self):
-        logging.debug('=============== Mode: ' + self.mode + ' ====================')
+        logging.debug('============ Mode: ' + self.mode + ' =================')
 
         # extract simulation settings
         setting = self.simulation_setting
-        c, v, x0, max_iter = setting['penalty'], setting['objective'], setting['initial'], setting['max_iter']
+        c, v, x0, max_iter = (setting['penalty'], setting['objective'], 
+                              setting['initial'], setting['max_iter'])
         x_opt = v.mean(axis=0)
 
         C = self.get_incidence()
         A, B = self.incidence_to_ab(C)
-        # node_degree and edge_degree are 1D vectors, to be compatible with numpy broadcasting rules
+        # node_degree and edge_degree are 1D vectors, to be compatible with
+        # numpy broadcasting rules
         # reshape them as (-1, 1), which is a 2D vector
-        node_degree, edge_degree = np.squeeze(np.asarray(C.sum(axis=1))), np.squeeze(np.asarray(C.sum(axis=0)))
+        node_degree, edge_degree = ( np.squeeze(np.asarray(C.sum(axis=1))), 
+                                    np.squeeze(np.asarray(C.sum(axis=0))) )
 
-        # the reason that there is no need to expand C, A, B to block structures is because of this equality:
+        # the reason that there is no need to expand C, A, B to block 
+        # structures is because of this equality:
         # AXB = (A kron B^T) vec(X)
         # therefore, z = C^T x = C^T vec(X) = (C kron I)^T vec(X) = C^T X I = C^T X
 
@@ -130,7 +142,7 @@ class Simulator():
         x, z, alpha = x0, z0, alpha0
         for i in range(max_iter):
             z_prev = z  # save for computing dual residual
-            x = (v - alpha + c * C.dot(z)) / (1 + c * node_degree.reshape(-1, 1))
+            x = (v - alpha + c * C.dot(z)) / (1 + c*node_degree.reshape(-1, 1))
             z = C.T.dot(x) / edge_degree.reshape(-1, 1)
             alpha += c * (node_degree.reshape(-1, 1) * x - C.dot(z))
 
