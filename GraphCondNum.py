@@ -30,7 +30,7 @@ def condition_number(C):
     return Lbd / lbd
 
 # number of nodes of path graph
-N = 5
+N = 11
 
 G = nx.path_graph(N)
 C = np.asarray(nx.incidence_matrix(G).todense())
@@ -67,15 +67,15 @@ print('H-ratio', Rh)
 
 print('Acceleration: ', Rd / Rh)
 
-Mh1 *= 3
+M2 *= 2
 Mh2 *= 3
-
-print("l / lh: ", l/lh)
-print("L / Lh: ", L/Lh)
-l_diff = np.abs(lh * .5 - l)
-L_diff = np.abs(Lh*1.2 - L)
-print('l relate to n', l_diff * N)
-print('L relate to n', L_diff * N)
+#
+#print("l / lh: ", l/lh)
+#print("L / Lh: ", L/Lh)
+#l_diff = np.abs(lh * .5 - l)
+#L_diff = np.abs(Lh*1.2 - L)
+#print('l relate to n', l_diff * N)
+#print('L relate to n', L_diff * N)
 
 def f(k):
     return 1 - np.cos(np.pi * k / N)

@@ -26,7 +26,8 @@ np.random.seed(1)
 v = np.random.rand(n_nodes, d) # + np.random.randint(1, 10)
 x_opt = v.mean()
 
-setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 'initial': np.random.randn(n_nodes, d)}
+setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v,
+           'initial': np.random.randn(n_nodes, d)}
 
 
 # start simulation

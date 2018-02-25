@@ -34,11 +34,13 @@ elif graph_type == 'Cycle Graph':
     g = nx.cycle_graph(n_nodes)
 else:
     raise Exception('Unsupported graph type')
-title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes, g.number_of_edges())
+title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes, 
+             g.number_of_edges())
 
 
 # start simulation
-setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 'initial': 0 * np.random.randn(n_nodes, d)}
+setting = {'penalty': 1, 'max_iter': max_iter, 'objective': v, 
+           'initial': 0 * np.random.randn(n_nodes, d)}
 sim = Simulator(g, simulation_setting=setting)
 
 # centralized
