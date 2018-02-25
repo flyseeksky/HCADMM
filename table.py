@@ -11,6 +11,13 @@ import matplotlib.pyplot as plt
 import GraphToolkit as gt
 
 
-n = 11
-graphs = [nx.path_graph(n), nx.cycle_graph(n), nx.star_graph(n-1),
+n_values = [11, 21, 31, 41, 51]
+ROW = 4
+COL = len(n_values)
+
+k = np.zeros((ROW, COL))
+for col, n in enumerate(n_values):
+    graphs = [nx.path_graph(n), nx.cycle_graph(n), nx.star_graph(n-1),
           nx.complete_graph(n)]
+    for row, G in enumerate(graphs):
+        k[row, col] = gt.cond_ratio(G)
