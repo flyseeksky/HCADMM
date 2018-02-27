@@ -11,13 +11,19 @@ import matplotlib.pyplot as plt
 import GraphToolkit as gt
 
 
-n_values = [11, 21, 31, 41, 51]
-ROW = 4
+#n_values = [11, 21, 31, 41, 51, 61]
+n_values = [70, 17]
+ROW = 1
 COL = len(n_values)
 
-k = np.zeros((ROW, COL))
-for col, n in enumerate(n_values):
-    graphs = [nx.path_graph(n), nx.cycle_graph(n), nx.star_graph(n-1),
-          nx.complete_graph(n)]
-    for row, G in enumerate(graphs):
-        k[row, col] = gt.cond_ratio(G)
+kappa = []
+for n in n_values:
+    graphs = [gt.ER(n, .78), nx.star_graph(n-1)]
+#    graphs = [nx.star_graph(n-1), nx.complete_graph(n),
+#              gt.ER(n, .05), gt.ER(n, .2), gt.ER(n, .3),
+#              nx.cycle_graph(n-1), nx.path_graph(n)]
+    k_col = []
+    for G in graphs:
+        k_col.append(gt.cond_ratio(G))
+    kappa.append(k_col)
+kappa = np.array(kappa).T

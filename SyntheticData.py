@@ -7,14 +7,14 @@ import networkx as nx
 # Line graph with a large diameter needs more iterations to achieve certain accuracy
 # simulation parameters
 np.random.seed(1)
-n_nodes = 50     # number of nodes
+n_nodes = 80     # number of nodes
 d = 3            # dimension of variable at each node
 v = np.random.rand(n_nodes, d)
 x_opt = v.mean()
 np.random.seed(10)
 
 # generate graph
-graph_type = 'Star Graph'
+graph_type = 'Erdos Renyi'
 
 
 if graph_type == 'Line Graph':
@@ -24,7 +24,7 @@ if graph_type == 'Line Graph':
 elif graph_type == 'Erdos Renyi':
     max_iter = 500
     best_penalty = (1, 6.75, 8.95)
-    prob = .1
+    prob = .8
     g = Simulator.erdos_renyi(n_nodes, prob, seed=1000)
 elif graph_type == 'Star Graph':
     max_iter = 50

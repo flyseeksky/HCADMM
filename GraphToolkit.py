@@ -59,6 +59,8 @@ def greedy_hyperedge(G, threshold=2):
     """
     assert isinstance(G, nx.Graph), 'Graph must'
     'be instance of networkx Graph'
+    
+    threshold = max(dict(G.degree).values())
 
     node_degree_list = sorted(list(G.degree), 
                               key=itemgetter(1), reverse=True)
@@ -92,6 +94,32 @@ def greedy_hyperedge(G, threshold=2):
         remaining_edge_set.difference_update(edges)
 
     # combining hyper edges and all remaining simple edges
+    # remove edge cross well connected hyperedges
+    remove_edge = set()
+    h_index1, h_index2 = np.nan, np.nan
+    for edge in remaining_edge_set:
+        for idx, hyperedge in enumerate(hyper_edge_list):
+            if not np.isnan(h_index1) and edge[0] in hyperedge:
+                h_index1 = idx
+            elif not np.isnan(h_index2) and edge[1] in hyperedge:
+                h_index2 = idx
+            if not np.isnan(h_index1 * h_index2):
+                break
+        if hyper_edge_list[h_index1].intersection(hyper_edge_list[h_index2]):
+            remove_edge.update(edge)
+    remaining_edge_set.difference_update(remove_edge)
+    
     hyper_edge_list += list(remaining_edge_set)
     hyper_edge_list = sorted(hyper_edge_list)
     return hyper_edge_list
+
+
+def ER(n, p):
+    """
+    Create a connected Erdos Renyi graph (n, p)
+    """
+    G = nx.erdos_renyi_graph(n, p)
+    while not nx.is_connected(G):
+        G = nx.erdos_renyi_graph(n, p)
+    return G
+
