@@ -12,13 +12,13 @@ import GraphToolkit as gt
 
 
 #n_values = [11, 21, 31, 41, 51, 61]
-n_values = [70, 17]
+n_values = [17, 11]
 ROW = 1
 COL = len(n_values)
 
 kappa = []
 for n in n_values:
-    graphs = [gt.ER(n, .78), nx.star_graph(n-1)]
+    graphs = [gt.ER(n, .6), nx.star_graph(n-1)]
 #    graphs = [nx.star_graph(n-1), nx.complete_graph(n),
 #              gt.ER(n, .05), gt.ER(n, .2), gt.ER(n, .3),
 #              nx.cycle_graph(n-1), nx.path_graph(n)]
@@ -26,4 +26,4 @@ for n in n_values:
     for G in graphs:
         k_col.append(gt.cond_ratio(G))
     kappa.append(k_col)
-kappa = np.array(kappa).T
+kappa = np.array(kappa)

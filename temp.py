@@ -13,11 +13,12 @@ import GraphToolkit as gt
 
 
 
-P = nx.star_graph(81)
-#hyeredge = gt.greedy_hyperedge(P)
-#print(hyeredge)
-C = gt.get_H_incidence(P)
-#print(C)
-
-r = gt.cond_ratio(P)
-print(r)
+#P = nx.star_graph(81)
+##hyeredge = gt.greedy_hyperedge(P)
+##print(hyeredge)
+#C = gt.get_H_incidence(P)
+##print(C)
+#
+#r = gt.cond_ratio(P)
+#print(r)
+gt.cond_ratio(graphs[0])
