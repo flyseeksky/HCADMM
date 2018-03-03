@@ -53,65 +53,61 @@ def get_H_incidence(G):
     return C
 
 
-def greedy_hyperedge(G, threshold=2):
+def greedy_hyperedge(G, threshold=4):
     """
     Automatically find patterns to build a hybrid model.
     """
     assert isinstance(G, nx.Graph), 'Graph must'
     'be instance of networkx Graph'
     
-#    threshold = max(dict(G.degree).values())
+    # NOW FCs can connect with each other
+    degree_dict = dict(G.degree)
+    node_degree_list = sorted(degree_dict.items(), key=lambda x: x[1], 
+                              reverse=True)
+    all_edges = set(G.edges)
+    FC = set()
 
-    node_degree_list = sorted(list(G.degree), 
-                              key=itemgetter(1), reverse=True)
-    # TODO fix number of local centers
-    # consider according to descending degree order
-    node_degree_list_to_consider = [nd for nd in node_degree_list 
-                                    if nd[1] >= threshold]
-    qualified_node_set = set([nd[0] for nd in node_degree_list_to_consider])
-    all_edge_set = set(G.edges)
-
-    hyper_edge_list = []
-    remaining_edge_set = all_edge_set.copy()
-    for node, _ in node_degree_list_to_consider:
-        # if current node not qualify, next
-        if node not in qualified_node_set:
-            continue
-
-        all_neighbors = tuple(sorted(nx.all_neighbors(G, node)))
-
-        # add current hyper-edge into hyper-edge list
-        hyper_edge = sorted([node] + list(all_neighbors))
-        hyper_edge_list.append(tuple(hyper_edge))
-
-        # mark all neighbors as not qualified
-        qualified_node_set.difference_update(hyper_edge)
-
-        # removing all edges from edge list
-        # remember removing all the edges bewteen nodes in one hyper-edge
-        edges = set([(node1, node2) for node1 in hyper_edge for node2 in 
-                     hyper_edge if node1 < node2])
-        remaining_edge_set.difference_update(edges)
-
-    # combining hyper edges and all remaining simple edges
-    # remove edge cross well connected hyperedges
-#    remove_edge = set()
-#    h_index1, h_index2 = np.nan, np.nan
-#    for edge in remaining_edge_set:
-#        for idx, hyperedge in enumerate(hyper_edge_list):
-#            if np.isnan(h_index1) and edge[0] in hyperedge:
-#                h_index1 = idx
-#            elif np.isnan(h_index2) and edge[1] in hyperedge:
-#                h_index2 = idx
-#            if not np.isnan(h_index1 * h_index2):
-#                break
-#        if not np.isnan(h_index1*h_index2) and   hyper_edge_list[h_index1].intersection(hyper_edge_list[h_index2]):
-#            remove_edge.update(edge)
-#    remaining_edge_set.difference_update(remove_edge)
+    while degree_dict:
+        # current node to consider: highest degree
+        node, degree = node_degree_list[0]
+        # find its neighbors in current hypergraph including itself
+        neighbor = set(nx.neighbors(G, node))
+        neighbor.difference_update(FC)  # exclue FCs
+        if len(neighbor) < threshold:
+            break
+        if neighbor:
+            neighbor.add(node)
+            ###### update node_degree_list
+            # remove current node
+            edges_to_remove = set()
+            for n in neighbor:
+                n_neighbor = set(nx.neighbors(G, n))
+                # for hyperedge in hyperedge_list:
+                #     if n in hyperedge:
+                #         n_neighbor.difference_update(hyperedge)
+                common_neighbor = n_neighbor & neighbor
+                # udpate degree
+                # k = len(common_neighbor)
+                # if k > 0:
+                #     degree_dict[n] -= k - 1
+                # all edges incident to node n
+                e1 = {(n, n1) for n1 in common_neighbor if n <= n1}
+                e2 = {(n1, n) for n1 in common_neighbor if n1 <= n}
+                edges_to_remove.update(e1 | e2)
+                edge_no_before = len(all_edges)
+                all_edges.difference_update(edges_to_remove)
+                edge_no_after = len(all_edges)
+                if edge_no_before - edge_no_after >= 2:
+                    degree_dict[n] -= edge_no_before - edge_no_after - 1  # hyperedge
+            # add hyperedge into edge list
+            all_edges.add(tuple(neighbor))
+        del degree_dict[node]
+        FC.add(node)
+        node_degree_list = sorted(degree_dict.items(), key=lambda x: x[1],
+                                  reverse=True)
     
-    hyper_edge_list += list(remaining_edge_set)
-#    hyper_edge_list = sorted(hyper_edge_list)
-    return hyper_edge_list
+    # hyperedge_list += list(all_edges)
+    return all_edges
 
 
 def ER(n, p):

@@ -12,7 +12,7 @@ import GraphToolkit as gt
 
 
 #n_values = [11, 21, 31, 41, 51, 61]
-n_values = [17, 11]
+n_values = [11, 21]
 ROW = 1
 COL = len(n_values)
 

@@ -5,7 +5,7 @@ import scipy.sparse as sps
 import numpy as np
 import scipy.linalg as LA
 import networkx as nx
-logging.basicConfig(level=logging.DEBUG, 
+logging.basicConfig(level=logging.CRITICAL,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
@@ -121,6 +121,8 @@ class Simulator():
         x_opt = v.mean(axis=0)
 
         C = self.get_incidence()
+        if self.mode == 'hybrid':
+            print(C.toarray())
         A, B = self.incidence_to_ab(C)
         # node_degree and edge_degree are 1D vectors, to be compatible with
         # numpy broadcasting rules

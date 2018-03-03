@@ -5,11 +5,12 @@ Created on Sat Feb 24 17:20:54 2018
 @author: maxxx971
 """
 
-#import numpy as np
-#from scipy import linalg
-#import matplotlib.pyplot as plt
+import numpy as np
+from scipy import linalg
+import matplotlib.pyplot as plt
 import networkx as nx
 import GraphToolkit as gt
+import Hypergraph as hg
 
 
 
@@ -21,4 +22,18 @@ import GraphToolkit as gt
 #
 #r = gt.cond_ratio(P)
 #print(r)
-gt.cond_ratio(graphs[0])
+# G = nx.gnp_random_graph(8, 0.7, seed=1000)
+# nx.draw_networkx(G)
+# plt.show()
+# print(gt.cond_ratio(G))
+
+# G = nx.from_numpy_array()
+# A = np.asarray(nx.incidence_matrix(G).todense())
+A = np.array([[1,0,0,0,0],
+              [1,1,1,0,0],
+              [0,1,0,0,0],
+              [0,0,1,1,0],
+              [0,0,0,1,1],
+              [0,0,0,0,1]])
+H = hg.Hypergraph(A)
+print(H.hyperincidence_matrix())
