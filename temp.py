@@ -20,7 +20,8 @@ import Hypergraph as hg
 #C = gt.get_H_incidence(P)
 ##print(C)
 #
-#r = gt.cond_ratio(P)
+r = gt.cond_ratio(graphs[3])
+print(r)
 #print(r)
 # G = nx.gnp_random_graph(8, 0.7, seed=1000)
 # nx.draw_networkx(G)
@@ -29,11 +30,11 @@ import Hypergraph as hg
 
 # G = nx.from_numpy_array()
 # A = np.asarray(nx.incidence_matrix(G).todense())
-A = np.array([[1,0,0,0,0],
-              [1,1,1,0,0],
-              [0,1,0,0,0],
-              [0,0,1,1,0],
-              [0,0,0,1,1],
-              [0,0,0,0,1]])
-H = hg.Hypergraph(A)
-print(H.hyperincidence_matrix())
+#A = np.array([[1,0,0,0,0],
+#              [1,1,1,0,0],
+#              [0,1,0,0,0],
+#              [0,0,1,1,0],
+#              [0,0,0,1,1],
+#              [0,0,0,0,1]])
+#H = hg.Hypergraph(A)
+#print(H.hyperincidence_matrix())

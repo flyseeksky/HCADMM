@@ -1,4 +1,4 @@
-# from Simulator import Simulator
+#from Simulator import Simulator
 from Admm_simulator import Simulator
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +7,7 @@ import networkx as nx
 
 # Line graph with a large diameter needs more iterations to achieve certain accuracy
 # simulation parameters
-np.random.seed(1)
+#np.random.seed(1)
 n_nodes = 10     # number of nodes
 d = 3            # dimension of variable at each node
 v = np.random.rand(n_nodes, d)
@@ -15,7 +15,7 @@ x_opt = v.mean()
 np.random.seed(10)
 
 # generate graph
-graph_type = 'Line Graph'
+graph_type = 'Star Graph'
 
 
 if graph_type == 'Line Graph':
@@ -32,7 +32,7 @@ elif graph_type == 'Star Graph':
     best_penalty = (1, 2, 2)
     g = nx.star_graph(n_nodes - 1)
 elif graph_type == 'Cycle Graph':
-    g = nx.cycle_graph(n_nodes)
+    g = nx.complete_graph(n_nodes)
     max_iter = 500
     best_penalty = (1, 6.75, 8.95)
 else:
@@ -106,4 +106,4 @@ plt.legend()
 # f1.savefig(graph_type + '.pdf', bbox_inches='tight')
 fig.tight_layout()
 # fig.savefig(graph_type + '.pdf', bbox='tight', pad_inches=0)
-plt.show()
+plt.show(block=False)
