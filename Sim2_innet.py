@@ -35,7 +35,7 @@ import networkx as nx
 
 
 # 1. graph
-n_nodes = 20     # number of nodes
+n_nodes = 50     # number of nodes
 d = 3            # dimension of variable at each node
 
 # 2. function

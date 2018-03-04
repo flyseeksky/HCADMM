@@ -4,9 +4,12 @@ import numpy as np
 
 class Hypergraph:
 
-    def __init__(self, incidence):
+    def __init__(self, incidence, hyperedge=[]):
         assert isinstance(incidence, np.ndarray), 'Wrong type'
-        self.incidence = self.in_network_acc(incidence)
+        if hyperedge:
+            self.incidence = Hypergraph.acc(incidence, hyperedge)
+        else:
+            self.incidence = Hypergraph.in_network_acc(incidence)
 
     def node_degree_matrix(self):
         degree = np.sum(self.incidence, axis=1)
@@ -27,8 +30,8 @@ class Hypergraph:
         neighbor_index = np.sum(C[:, incident_edge], axis=1) >= 1
         return node_seq[neighbor_index]
 
-
-    def in_network_acc(self, incidence, th=2, num=-1):
+    @staticmethod
+    def in_network_acc(incidence, th=2, num=-1):
         C = incidence.copy() # incidence matrix
         N = C.shape[0]
         HC = []
@@ -53,5 +56,28 @@ class Hypergraph:
         incident_edge = np.sum(C[node_consider, :], axis=0).astype(bool)
         HC.append(C[:, incident_edge])
         HC = np.column_stack(HC)
+        return HC
+
+    @staticmethod
+    def acc(incidence, hyperedge):
+        """
+        Generate hypergraph with hyperedge specified by hyperedge
+        For the moment, only one hyperedge is suppored.
+        """
+        C = incidence.copy()
+        N, M = C.shape
+        node_list = np.arange(N)
+
+        # get edge index to build hyperedge
+        edge_combine = np.full((M,), False)
+        for edge in range(M):
+            node1, node2 = node_list[C[:, edge].astype(bool)]
+            if node1 in hyperedge and node2 in hyperedge:
+                edge_combine[edge] = True
+
+        # build hyperedge
+        he = np.sum(C[:, edge_combine], axis=1).astype(bool).astype(float)
+        # build incidence
+        HC = np.column_stack((he, C[:, ~edge_combine]))
         return HC
 
