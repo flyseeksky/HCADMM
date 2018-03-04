@@ -10,7 +10,7 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 import networkx as nx
 import GraphToolkit as gt
-import Hypergraph as hg
+from Hypergraph import Hypergraph
 
 
 
@@ -20,8 +20,8 @@ import Hypergraph as hg
 #C = gt.get_H_incidence(P)
 ##print(C)
 #
-r = gt.cond_ratio(graphs[3])
-print(r)
+#r = gt.cond_ratio(graphs[3])
+#print(r)
 #print(r)
 # G = nx.gnp_random_graph(8, 0.7, seed=1000)
 # nx.draw_networkx(G)
@@ -38,3 +38,16 @@ print(r)
 #              [0,0,0,0,1]])
 #H = hg.Hypergraph(A)
 #print(H.hyperincidence_matrix())
+#%%
+G = nx.path_graph(10)
+C = nx.incidence_matrix(G).toarray()
+H = Hypergraph(C, [4,5,6,7,8,9])
+Ch = H.incidence_matrix()
+print(Ch)
+
+#%%
+G = nx.complete_graph(5)
+C = nx.incidence_matrix(G).toarray()
+H = Hypergraph(C, [1,2,3])
+Ch = H.incidence_matrix()
+print(Ch)

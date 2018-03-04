@@ -28,8 +28,18 @@ class Simulator():
             C = nx.incidence_matrix(self.graph)
             logger.debug("Hybrid C = \n" + str(C.todense()))
         elif self.mode == 'H-CADMM':
+            # if random select
+            hyperedge = []
+            if self.setting['random_hyperedge']:
+                N = self.graph.number_of_nodes()
+                r = self.setting['random_hyperedge']
+                n_sample = int(N * r)
+                hyperedge = np.random.choice(np.arange(N), (n_sample,),
+                                             replace=False)
+                hyperedge = list(hyperedge)
+            # normal process, check if hyperedge is set or not
             C = np.asarray(nx.incidence_matrix(self.graph).todense())
-            H = Hypergraph(C)
+            H = Hypergraph(C, hyperedge)
             C = H.incidence_matrix()
             logger.debug("Hybrid C = \n" + str(C))
         else:
@@ -78,7 +88,8 @@ class Simulator():
                 logger.info('Progress %.1f', 100 * (i+1)/ max_iter)
 
         logger.info('Mode: %s, ending for loop', self.mode)
-        return primal_gap, primal_residual, dual_residual
+        edges = C.sum()
+        return primal_gap, primal_residual, dual_residual, edges
 
     @staticmethod
     def erdos_renyi(n_nodes, prob, seed=None):
