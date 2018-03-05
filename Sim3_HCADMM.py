@@ -50,7 +50,7 @@ graphs = [nx.lollipop_graph(n_nodes//2, n_nodes - n_nodes//2 ),
           Simulator.erdos_renyi(n_nodes, 0.1, seed=1000)]
 #          Simulator.erdos_renyi(n_nodes, 0.1),
 #          Simulator.erdos_renyi(n_nodes, 0.05)]
-graph_name = ['Lollipop', 'Caveman', 'ER(p=0.1)', 'ER(p=0.2)']
+graph_name = ['Lollipop', 'Caveman', 'ER(p=0.05)', 'ER(p=0.1)']
 line_style = ['--rd', '-rd',
               '--c^', '-c^',
               '--bs', '-bs',
@@ -115,17 +115,17 @@ plt.legend()
 
 #%%
 # accuracy vs communication
-#fig = plt.figure(2, figsize=(8, 6))
-#for data, style in zip(sim_data, line_style):
-#    edges = data['edges']
-#    comm_cost = np.arange(len(data['opt_gap'])) * edges
-#    plt.semilogy(comm_cost, data['opt_gap'], style, label=data['legend'],
-#                 markevery=marker_at)
-#
-#plt.xlabel('Communication cost')
-#plt.ylabel('Accuracy')
-#plt.ylim(ymin=1e-8)
-#plt.legend()
+fig = plt.figure(2, figsize=(8, 6))
+for data, style in zip(sim_data, line_style):
+    edges = data['edges']
+    comm_cost = np.arange(len(data['opt_gap'])) * edges
+    plt.semilogy(comm_cost, data['opt_gap'], style, label=data['legend'],
+                 markevery=marker_at)
+
+plt.xlabel('Communication cost')
+plt.ylabel('Accuracy')
+plt.ylim(ymin=1e-8)
+plt.legend()
 
 fig.tight_layout()
 plt.show()
