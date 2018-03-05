@@ -4,20 +4,8 @@ Created on Sat Mar  3 16:09:20 2018
 
 @author: maxxx971
 
-This is for simulation 1, which will produce two figure:
-   1. accuracy vs iteration number;
-   2. accuracy vs communication cost;
+For in-network acceleration, but on RANDOM graphs.
 
-The main purpose of this simulation is to demonstrate the ability of
-"in-network acceleration" for typical graphs, including:
-   1. line graph, largest diameter with given number of nodes
-   2. cycle graph, diameter shrink by half compared to line graph
-   3. star graph, largest acceleration achieved
-   4. complete graph, limited acceleration since diameter=2
-   5. lollipop graph, show that even a single path can significantly reduce
-      convergence speed of fully decentralized method
-   6. Erdos-Renyi, no specific reasons, maybe not included
-   7. grid graph, again acceleration exists, but not impressive
 """
 
 #%% import libraries
@@ -60,9 +48,13 @@ best_penalty = [{'D-CADMM': 5, 'H-CADMM': 5},
                 {'D-CADMM': 5, 'H-CADMM': 5}]
 all_mode = ['D-CADMM', 'H-CADMM']
 max_iter = 500
+epsilon = 1e-8
 # start simulation
 setting = {'penalty': -1, 'max_iter': max_iter, 'objective': v,
-           'initial': 0 * np.random.randn(n_nodes, d)}
+           'initial': 0 * np.random.randn(n_nodes, d),
+           'random_hyperedge': [],
+           'epsilon': epsilon,
+           'n_FC': -1}
 
 #title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes,
 #             g.number_of_edges())
@@ -80,7 +72,7 @@ for G, name, rho in zip(graphs, graph_name, best_penalty):
         data = {}
         sim.mode = mode
         sim.setting['penalty'] = rho[mode]
-        opt_gap, primal_residual, dual_residual = sim.run_least_squares()
+        opt_gap, primal_residual, dual_residual,_ = sim.run_least_squares()
         data['legend'] = name + ' ' + sim.mode
         data['opt_gap'] = opt_gap
         data['primal_residual'] = primal_residual
@@ -102,7 +94,8 @@ for G, name, rho in zip(graphs, graph_name, best_penalty):
 
 #%% plot
 n_markers = 20
-marker_at = range(0, setting['max_iter'], setting['max_iter'] // n_markers)
+#marker_at = range(0, setting['max_iter'], setting['max_iter'] // n_markers)
+marker_at = setting['max_iter'] // n_markers
 
 # accuracy vs iteration
 fig = plt.figure(1, figsize=(8, 6))
@@ -114,7 +107,7 @@ for data, style in zip(sim_data, line_style):
 plt.ylabel('Accuracy')
 plt.xlabel('Iterations')
 # plt.title(title_str)
-plt.ylim(ymin=1e-8)
+plt.ylim(ymin=epsilon)
 plt.legend()
 
 

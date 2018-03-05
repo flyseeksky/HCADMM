@@ -57,9 +57,11 @@ best_penalty = [{'D-CADMM': 5, 'H-CADMM': 5},# Line
                 {'D-CADMM': 5, 'H-CADMM': 5}]# Star
 all_mode = ['D-CADMM', 'H-CADMM']
 max_iter = 500
+epsilon = 1e-8
 # start simulation
 setting = {'penalty': -1, 'max_iter': max_iter, 'objective': v,
-           'initial': 0 * np.random.randn(n_nodes, d)}
+           'initial': 0 * np.random.randn(n_nodes, d),
+           'epsilon': epsilon}
 
 #title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes,
 #             g.number_of_edges())
@@ -77,30 +79,18 @@ for G, name, rho in zip(graphs, graph_name, best_penalty):
         data = {}
         sim.mode = mode
         sim.setting['penalty'] = rho[mode]
-        opt_gap, primal_residual, dual_residual = sim.run_least_squares()
+        opt_gap, primal_residual, dual_residual, _ = sim.run_least_squares()
         data['legend'] = name + ' ' + sim.mode
         data['opt_gap'] = opt_gap
         data['primal_residual'] = primal_residual
         data['dual_residual'] = dual_residual
         sim_data.append(data)
 
-#%%
-#plt.figure()
-#plt.semilogy(sim_data[0]['opt_gap'], '--r', label='frist')
-#plt.semilogy(sim_data[1]['opt_gap'], '-b', label='second')
-#
-#plt.legend()
-#plt.show()
-## decentralized ADMM
-#   sim.mode = 'decentralized'
-#   sim.simulation_setting['penalty'] = best_penalty[2]
-#   d_opt_gap, d_primal_residual, d_dual_residual = sim.run_least_squares()
-
-
 #%% plot
 n_markers = 20
-marker_at = range(0, setting['max_iter'], setting['max_iter'] // n_markers)
-
+#marker_at = np.array(range(0, setting['max_iter'],
+#                           setting['max_iter'] // n_markers))
+marker_at = setting['max_iter'] // n_markers
 # accuracy vs iteration
 fig = plt.figure(1, figsize=(8, 6))
 # fig = plt.figure()
@@ -111,7 +101,7 @@ for data, style in zip(sim_data, line_style):
 plt.ylabel('Accuracy')
 plt.xlabel('Iterations')
 # plt.title(title_str)
-plt.ylim(ymin=1e-8)
+plt.ylim(ymin=epsilon)
 plt.legend()
 
 

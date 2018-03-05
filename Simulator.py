@@ -20,7 +20,7 @@ class Simulator():
         self.mode = mode
         self.setting = simulation_setting
 
-    @numba.jit
+#    @numba.jit
     def run_least_squares(self):
         logger.info('===== Mode: ' + self.mode + ' =====')
         N = self.graph.number_of_nodes()
@@ -33,7 +33,7 @@ class Simulator():
         elif self.mode == 'H-CADMM':
             # ===========================================
             # if random select
-            if self.setting['random_hyperedge']:
+            if 'random_hyperedge' in self.setting.keys():
                 r = self.setting['random_hyperedge']
                 n_sample = int(N * r)
                 hyperedge = np.random.choice(np.arange(N), (n_sample,),
@@ -43,10 +43,10 @@ class Simulator():
                 hyperedge = []
             # ============================================
             # check if n_FC is set
-            if self.setting['n_FC']:
+            if 'n_FC' in self.setting.keys():
                 n_FC = self.setting['n_FC']
             else:
-                n_FC = []
+                n_FC = -1
             # =================================================
             # normal process, check if hyperedge is set or not
             C = np.asarray(nx.incidence_matrix(self.graph).todense())
