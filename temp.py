@@ -41,7 +41,7 @@ from Hypergraph import Hypergraph
 #%%
 G = nx.path_graph(10)
 C = nx.incidence_matrix(G).toarray()
-H = Hypergraph(C, [4,5,6,7,8,9])
+H = Hypergraph(C, num=4)
 Ch = H.incidence_matrix()
 print(Ch)
 

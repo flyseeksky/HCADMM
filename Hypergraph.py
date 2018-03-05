@@ -4,12 +4,12 @@ import numpy as np
 
 class Hypergraph:
 
-    def __init__(self, incidence, hyperedge=[]):
+    def __init__(self, incidence, hyperedge=[], num=-1):
         assert isinstance(incidence, np.ndarray), 'Wrong type'
         if hyperedge:
             self.incidence = Hypergraph.acc(incidence, hyperedge)
         else:
-            self.incidence = Hypergraph.in_network_acc(incidence)
+            self.incidence = Hypergraph.in_network_acc(incidence, num=num)
 
     def node_degree_matrix(self):
         degree = np.sum(self.incidence, axis=1)
@@ -35,6 +35,7 @@ class Hypergraph:
         C = incidence.copy() # incidence matrix
         N = C.shape[0]
         HC = []
+        FC = []
         node_consider = np.full((N,), True)
         node_degree = np.sum(C, axis=1)
         node_label = np.arange(N)
@@ -53,6 +54,11 @@ class Hypergraph:
             # exclude node already in other hyperedges
             node_degree = np.sum(C, axis=1)
             node_consider = node_consider & ~hyperedge
+
+            # check if enough FCs
+            FC.append(node)
+            if num > 0 and len(FC) >= num:
+                break
         incident_edge = np.sum(C[node_consider, :], axis=0).astype(bool)
         HC.append(C[:, incident_edge])
         HC = np.column_stack(HC)

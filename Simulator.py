@@ -21,6 +21,7 @@ class Simulator():
 
     def run_least_squares(self):
         logger.info('===== Mode: ' + self.mode + ' =====')
+        N = self.graph.number_of_nodes()
 
         if self.mode == 'C-CADMM':
             C = np.ones((self.graph.number_of_nodes(), 1))
@@ -28,18 +29,26 @@ class Simulator():
             C = nx.incidence_matrix(self.graph)
             logger.debug("Hybrid C = \n" + str(C.todense()))
         elif self.mode == 'H-CADMM':
+            # ===========================================
             # if random select
-            hyperedge = []
             if self.setting['random_hyperedge']:
-                N = self.graph.number_of_nodes()
                 r = self.setting['random_hyperedge']
                 n_sample = int(N * r)
                 hyperedge = np.random.choice(np.arange(N), (n_sample,),
                                              replace=False)
                 hyperedge = list(hyperedge)
+            else:
+                hyperedge = []
+            # ============================================
+            # check if n_FC is set
+            if self.setting['n_FC']:
+                n_FC = self.setting['n_FC']
+            else:
+                n_FC = []
+            # =================================================
             # normal process, check if hyperedge is set or not
             C = np.asarray(nx.incidence_matrix(self.graph).todense())
-            H = Hypergraph(C, hyperedge)
+            H = Hypergraph(C, hyperedge=hyperedge, num=n_FC)
             C = H.incidence_matrix()
             logger.debug("Hybrid C = \n" + str(C))
         else:
@@ -50,6 +59,7 @@ class Simulator():
             L, l = cond_num(C)
             self.setting['penalty'] = np.sqrt(2 / (L*l*(1 + 2*L/l)))
             logger.debug('penalty = ' + str(self.setting['penalty']))
+            print('auto penalty used')
 
         # convert C to A, B to compute residual
         A, B = self.incidence_to_ab(C)
@@ -81,6 +91,10 @@ class Simulator():
             primal_gap.append(LA.norm(x - x_opt) / LA.norm(x_opt))
             primal_residual.append(LA.norm(A.dot(x) - B.dot(z)))
             dual_residual.append(LA.norm(rho * C.dot(z - z_prev)))
+
+            # stop if accuracy is reached
+            if primal_gap[-1] < self.setting['epsilon']:
+                break
 
             # debug printing
             step = max_iter // 10
