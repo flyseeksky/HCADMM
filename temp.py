@@ -39,15 +39,23 @@ from Hypergraph import Hypergraph
 #H = hg.Hypergraph(A)
 #print(H.hyperincidence_matrix())
 #%%
-G = nx.path_graph(10)
-C = nx.incidence_matrix(G).toarray()
-H = Hypergraph(C, num=4)
-Ch = H.incidence_matrix()
-print(Ch)
+#G = nx.path_graph(10)
+#C = nx.incidence_matrix(G).toarray()
+#H = Hypergraph(C, num=4)
+#Ch = H.incidence_matrix()
+#print(Ch)
+#
+##%%
+#G = nx.complete_graph(5)
+#C = nx.incidence_matrix(G).toarray()
+#H = Hypergraph(C, [1,2,3])
+#Ch = H.incidence_matrix()
+#print(Ch)
 
-#%%
-G = nx.complete_graph(5)
-C = nx.incidence_matrix(G).toarray()
-H = Hypergraph(C, [1,2,3])
-Ch = H.incidence_matrix()
-print(Ch)
+globaltemperatures = [14.4, 14.5, 14.8, 15.2, 15.5, 15.8]
+numpirates = [45000, 20000, 15000, 5000, 400, 17]
+
+fig = plt.figure(1, figsize=(8, 6))
+plt.plot(numpirates, globaltemperatures, label="line")
+plt.scatter(numpirates, globaltemperatures)
+plt.show()

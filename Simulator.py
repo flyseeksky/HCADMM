@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3
 from operator import itemgetter
+import numba
 import scipy.sparse as sps
 import numpy as np
 import scipy.linalg as LA
@@ -19,6 +20,7 @@ class Simulator():
         self.mode = mode
         self.setting = simulation_setting
 
+    @numba.jit
     def run_least_squares(self):
         logger.info('===== Mode: ' + self.mode + ' =====')
         N = self.graph.number_of_nodes()
