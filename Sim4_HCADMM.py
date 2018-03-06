@@ -38,7 +38,7 @@ epsilon = 1e-8
 # start simulation
 setting = {'penalty': -1, 'max_iter': max_iter, 'objective': v,
            'initial': 0 * np.random.randn(n_nodes, d),
-           'random_hyperedge': .5,  # ration of nodes in hyperedge
+           'random_hyperedge': .2,  # ration of nodes in hyperedge
            'epsilon': epsilon,
            'n_FC': -1}
 
@@ -56,7 +56,7 @@ line_style = ['--rd', '-rd',
               '--bs', '-bs',
               '--go', '-go']
 best_penalty = [{'D-CADMM': 5, 'H-CADMM': 1},
-                {'D-CADMM': 2, 'H-CADMM': 1},
+                {'D-CADMM': 2, 'H-CADMM': 1.6},
                 {'D-CADMM': 1, 'H-CADMM': 2},
                 {'D-CADMM': .7, 'H-CADMM': .9}]
 
