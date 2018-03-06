@@ -47,14 +47,15 @@ x_opt = v.mean()
 # 3. simulation setting
 graphs = [nx.path_graph(n_nodes),
           nx.cycle_graph(n_nodes),
+#          nx.grid_graph((7, 7)),
           nx.star_graph(n_nodes-1)]
 graph_name = ['Line', 'Cycle', 'Star']
 line_style = ['--rd', '-rd',
               '--bs', '-bs',
               '--go', '-go']
-best_penalty = [{'D-CADMM': 5, 'H-CADMM': 5},# Line
-                {'D-CADMM': 5, 'H-CADMM': 5},# Cycle
-                {'D-CADMM': 5, 'H-CADMM': 5}]# Star
+best_penalty = [{'D-CADMM': 8.25, 'H-CADMM': 6.68},# Line
+                {'D-CADMM': 4.03, 'H-CADMM': 3.3},# Cycle
+                {'D-CADMM': 1, 'H-CADMM': 1}]# Star
 all_mode = ['D-CADMM', 'H-CADMM']
 max_iter = 500
 epsilon = 1e-8
@@ -87,7 +88,7 @@ for G, name, rho in zip(graphs, graph_name, best_penalty):
         sim_data.append(data)
 
 #%% plot
-n_markers = 20
+n_markers = 30
 #marker_at = np.array(range(0, setting['max_iter'],
 #                           setting['max_iter'] // n_markers))
 marker_at = setting['max_iter'] // n_markers
@@ -99,9 +100,10 @@ for data, style in zip(sim_data, line_style):
                  markevery=marker_at)
 
 plt.ylabel('Accuracy')
-plt.xlabel('Iterations')
+plt.xlabel('Iterations/Communication cost')
 # plt.title(title_str)
 plt.ylim(ymin=epsilon)
+#plt.xlim(xma)
 plt.legend()
 
 

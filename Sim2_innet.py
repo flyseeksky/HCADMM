@@ -25,7 +25,7 @@ import networkx as nx
 # 1. graph
 n_nodes = 50     # number of nodes
 d = 3            # dimension of variable at each node
-
+np.random.seed(1000)
 # 2. function
 # objective value
 v = np.random.rand(n_nodes, d)
@@ -33,28 +33,27 @@ v = np.random.rand(n_nodes, d)
 x_opt = v.mean()
 
 # 3. simulation setting
-graphs = [nx.lollipop_graph(n_nodes//2, n_nodes - n_nodes//2 ),
+graphs = [nx.lollipop_graph(n_nodes//2, n_nodes - n_nodes//2),
           nx.connected_caveman_graph(n_nodes//5, 5),
-          Simulator.erdos_renyi(n_nodes, 0.1),
-          Simulator.erdos_renyi(n_nodes, 0.05)]
-graph_name = ['Lollipop', 'Caveman', 'ER(p=0.01)', 'ER(p=0.05)']
+          Simulator.erdos_renyi(n_nodes, 0.05),
+          Simulator.erdos_renyi(n_nodes, 0.1, seed=1000)]
+graph_name = ['Lollipop', 'Caveman', 'ER(p=0.05)', 'ER(p=0.1)']
 line_style = ['--rd', '-rd',
               '--c^', '-c^',
               '--bs', '-bs',
               '--go', '-go']
-best_penalty = [{'D-CADMM': 5, 'H-CADMM': 5},
-                {'D-CADMM': 5, 'H-CADMM': 5},
-                {'D-CADMM': 5, 'H-CADMM': 5},
-                {'D-CADMM': 5, 'H-CADMM': 5}]
+best_penalty = [{'D-CADMM': 5, 'H-CADMM': 5.56},
+                {'D-CADMM': 1.57, 'H-CADMM': 2.45},
+                {'D-CADMM': 1.2, 'H-CADMM':1.78},
+                {'D-CADMM': .75, 'H-CADMM': 1.4}]
 all_mode = ['D-CADMM', 'H-CADMM']
 max_iter = 500
 epsilon = 1e-8
 # start simulation
 setting = {'penalty': -1, 'max_iter': max_iter, 'objective': v,
            'initial': 0 * np.random.randn(n_nodes, d),
-           'random_hyperedge': [],
-           'epsilon': epsilon,
-           'n_FC': -1}
+#           'random_hyperedge': .5,
+           'epsilon': epsilon}
 
 #title_str = '{}, Nodes: {}, Edges: {}'.format(graph_type, n_nodes,
 #             g.number_of_edges())
@@ -105,7 +104,7 @@ for data, style in zip(sim_data, line_style):
                  markevery=marker_at)
 
 plt.ylabel('Accuracy')
-plt.xlabel('Iterations')
+plt.xlabel('Iterations/Communicatino cost')
 # plt.title(title_str)
 plt.ylim(ymin=epsilon)
 plt.legend()
