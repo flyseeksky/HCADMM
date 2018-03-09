@@ -42,7 +42,7 @@ line_style = ['--rd', '-rd',
               '--c^', '-c^',
               '--bs', '-bs',
               '--go', '-go']
-best_penalty = [{'D-CADMM': 5, 'H-CADMM': 5.56},
+best_penalty = [{'D-CADMM': 5, 'H-CADMM': 5.5},
                 {'D-CADMM': 1.57, 'H-CADMM': 2.45},
                 {'D-CADMM': 1.2, 'H-CADMM':1.78},
                 {'D-CADMM': .75, 'H-CADMM': 1.4}]

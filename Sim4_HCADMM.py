@@ -52,13 +52,13 @@ graphs = [nx.lollipop_graph(n_nodes//2, n_nodes - n_nodes//2 ),
 #          Simulator.erdos_renyi(n_nodes, 0.05)]
 graph_name = ['Lollipop', 'Caveman', 'ER(p=0.05)', 'ER(p=0.1)']
 line_style = ['--rd', '-rd',
-              '--c^', '-c^',
+              '--m^', '-m^',
               '--bs', '-bs',
               '--go', '-go']
-best_penalty = [{'D-CADMM': 5, 'H-CADMM': 1},
-                {'D-CADMM': 2, 'H-CADMM': 1.6},
-                {'D-CADMM': 1, 'H-CADMM': 2},
-                {'D-CADMM': .7, 'H-CADMM': .9}]
+best_penalty = [{'D-CADMM': 5.3, 'H-CADMM': 2.2},
+                {'D-CADMM': 1.55, 'H-CADMM': 1.58},
+                {'D-CADMM': 1.15, 'H-CADMM': 1.175},
+                {'D-CADMM': .7, 'H-CADMM': .7}]
 
 #%%
 #graphs = [nx.path_graph(n_nodes),

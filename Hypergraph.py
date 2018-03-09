@@ -1,11 +1,11 @@
 # hypergraph class
 import numpy as np
-
+from scipy import sparse as sps
 
 class Hypergraph:
 
     def __init__(self, incidence, hyperedge=[], num=-1):
-        assert isinstance(incidence, np.ndarray), 'Wrong type'
+        #assert isinstance(incidence, np.ndarray), 'Wrong type'
         if hyperedge:
             self.incidence = Hypergraph.acc(incidence, hyperedge)
         else:
@@ -23,7 +23,7 @@ class Hypergraph:
         return self.incidence
 
     def neighbor(self, node):
-        C = self.incidence == 1
+        C = self.incidence.astype(bool)
         N = C.shape[0]
         node_seq = np.arange(N)
         incident_edge = C[node, :]
@@ -32,8 +32,13 @@ class Hypergraph:
 
     @staticmethod
     def in_network_acc(incidence, th=2, num=-1):
+        """
+        Accelerate D-CADMM by creating virtual FCs.
+        """
         C = incidence.copy() # incidence matrix
-        N = C.shape[0]
+        if sps.issparse(C):
+            C = C.toarray()
+        N, M = C.shape
         HC = []
         FC = []
         node_consider = np.full((N,), True)
@@ -44,8 +49,8 @@ class Hypergraph:
             max_node_index = np.argmax(node_degree[node_consider])
             sub_node_index = node_label[node_consider]
             node = sub_node_index[max_node_index]
-            incident_edge = C[node, :]
-            hyperedge = np.sum(C[:, incident_edge.astype(bool)], axis=1) > 0
+            incident_edge = C[node, :].astype(bool)
+            hyperedge = np.sum(C[:, incident_edge], axis=1) > 0
 
             # rebuild incidence matrix
             HC.append(hyperedge)
