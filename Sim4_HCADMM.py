@@ -29,14 +29,14 @@ np.random.seed(200)
 # 2. function
 # objective value
 v = np.random.rand(n_nodes, d)
-# optimal value
-x_opt = v.mean()
 
 all_mode = ['D-CADMM', 'H-CADMM']
 max_iter = 500
 epsilon = 1e-8
 # start simulation
-setting = {'penalty': -1, 'max_iter': max_iter, 'objective': v,
+setting = {'penalty': -1,
+           'max_iter': max_iter,
+           'objective': v,
            'initial': 0 * np.random.randn(n_nodes, d),
            'random_hyperedge': .2,  # ration of nodes in hyperedge
            'epsilon': epsilon,
@@ -48,8 +48,6 @@ graphs = [nx.lollipop_graph(n_nodes//2, n_nodes - n_nodes//2 ),
           nx.connected_caveman_graph(n_nodes//5, 5),
           Simulator.erdos_renyi(n_nodes, 0.05),
           Simulator.erdos_renyi(n_nodes, 0.1, seed=1000)]
-#          Simulator.erdos_renyi(n_nodes, 0.1),
-#          Simulator.erdos_renyi(n_nodes, 0.05)]
 graph_name = ['Lollipop', 'Caveman', 'ER(p=0.05)', 'ER(p=0.1)']
 line_style = ['--rd', '-rd',
               '--m^', '-m^',

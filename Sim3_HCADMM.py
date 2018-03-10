@@ -36,7 +36,9 @@ all_mode = ['D-CADMM', 'H-CADMM']
 max_iter = 500
 epsilon = 1e-8
 # start simulation
-setting = {'penalty': -1, 'max_iter': max_iter, 'objective': v,
+setting = {'penalty': -1,
+           'max_iter': max_iter,
+           'objective': v,
            'initial': 0 * np.random.randn(n_nodes, d),
            'random_hyperedge': .5,  # ration of nodes in hyperedge
            'epsilon': epsilon,

@@ -8,8 +8,9 @@ import networkx as nx
 from Hypergraph import Hypergraph
 from GraphToolkit import cond_num
 import logging
+logging.warning('Enter Simulator')
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 class Simulator():

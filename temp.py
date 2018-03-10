@@ -52,10 +52,13 @@ from Hypergraph import Hypergraph
 #Ch = H.incidence_matrix()
 #print(Ch)
 
-globaltemperatures = [14.4, 14.5, 14.8, 15.2, 15.5, 15.8]
-numpirates = [45000, 20000, 15000, 5000, 400, 17]
+#globaltemperatures = [14.4, 14.5, 14.8, 15.2, 15.5, 15.8]
+#numpirates = [45000, 20000, 15000, 5000, 400, 17]
+#
+#fig = plt.figure(1, figsize=(8, 6))
+#plt.plot(numpirates, globaltemperatures, label="line")
+#plt.scatter(numpirates, globaltemperatures)
+#plt.show()
 
-fig = plt.figure(1, figsize=(8, 6))
-plt.plot(numpirates, globaltemperatures, label="line")
-plt.scatter(numpirates, globaltemperatures)
-plt.show()
+import logging
+print(logging.getLogger().handlers)
