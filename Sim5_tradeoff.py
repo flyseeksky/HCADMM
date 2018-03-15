@@ -122,6 +122,7 @@ plt.ylabel('Iterations needed')
 plt.xlabel('Number of local FCs')
 # plt.title(title_str)
 #plt.ylim(ymin=1e-8)
+plt.tight_layout()
 plt.legend()
 
 #%%

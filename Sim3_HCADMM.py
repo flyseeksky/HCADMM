@@ -57,10 +57,10 @@ line_style = ['--rd', '-rd',
               '--m^', '-m^',
               '--bs', '-bs',
               '--go', '-go']
-best_penalty = [{'D-CADMM': 5, 'H-CADMM': .7},
-                {'D-CADMM': 1.56, 'H-CADMM': .95},
-                {'D-CADMM': 1, 'H-CADMM': 1.15},
-                {'D-CADMM': .65, 'H-CADMM': .75}]
+best_penalty = [{'D-CADMM': 5.3, 'H-CADMM': .7},
+                {'D-CADMM': 1.55, 'H-CADMM': .9},
+                {'D-CADMM': 1.15, 'H-CADMM': 1.15},
+                {'D-CADMM': .7, 'H-CADMM': .75}]
 
 #%%
 #graphs = [nx.path_graph(n_nodes),
@@ -113,6 +113,8 @@ plt.ylabel('Accuracy')
 plt.xlabel('Iterations')
 # plt.title(title_str)
 plt.ylim(ymin=1e-8)
+plt.xlim([-5, 500])
+fig.tight_layout()
 plt.legend()
 
 #%%
@@ -127,6 +129,7 @@ for data, style in zip(sim_data, line_style):
 plt.xlabel('Communication cost')
 plt.ylabel('Accuracy')
 plt.ylim(ymin=1e-8)
+plt.xlim([-1000, 80000])
 plt.legend()
 
 fig.tight_layout()
