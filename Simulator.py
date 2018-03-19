@@ -10,7 +10,7 @@ from GraphToolkit import cond_num
 import logging
 logging.warning('Enter Simulator')
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARN)
 
 
 class Simulator():

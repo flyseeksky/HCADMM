@@ -24,7 +24,7 @@ import networkx as nx
 # 1. graph
 n_nodes = 50     # number of nodes
 d = 1            # dimension of variable at each node
-np.random.seed(200)
+#np.random.seed(200)
 
 # 2. function
 # objective value
@@ -109,7 +109,12 @@ plt.ylabel('Accuracy')
 plt.xlabel('Iterations')
 # plt.title(title_str)
 plt.ylim(ymin=1e-8)
+plt.xlim([-5, 500])
+plt.tight_layout()
 plt.legend()
+
+from matplotlib2tikz import save as tikz_save
+tikz_save('g_acc_iter2.tex', figureheight='4cm', figurewidth='6cm')
 
 #%%
 # accuracy vs communication
@@ -123,7 +128,9 @@ for data, style in zip(sim_data, line_style):
 plt.xlabel('Communication cost')
 plt.ylabel('Accuracy')
 plt.ylim(ymin=1e-8)
+plt.xlim([-1000, 80000])
 plt.legend()
 
 fig.tight_layout()
+tikz_save('g_acc_comm2.tex', figureheight='4cm', figurewidth='6cm')
 plt.show()

@@ -1,0 +1,63 @@
+% This file was created by matplotlib2tikz v0.6.15.
+\begin{tikzpicture}
+
+\definecolor{color0}{rgb}{0,0.75,0.75}
+
+\begin{axis}[
+xlabel={Number of local FCs},
+ylabel={Iterations needed},
+xmin=-0.2, xmax=26.2,
+ymin=17.7, ymax=948.3,
+width=6cm,
+height=4cm,
+tick align=outside,
+tick pos=left,
+x grid style={white!69.01960784313725!black},
+y grid style={white!69.01960784313725!black},
+legend style={draw=white!80.0!black},
+legend entries={{Line},{Cycle},{Lollipop},{ER(p=0.1)}},
+legend cell align={left}
+]
+\addlegendimage{no markers, red}
+\addlegendimage{no markers, color0}
+\addlegendimage{no markers, blue}
+\addlegendimage{no markers, green!50.0!black}
+\addplot [semithick, red, mark=diamond*, mark size=3, mark options={solid}]
+table {%
+1 906
+5 897
+10 733
+15 513
+20 468
+25 392
+};
+\addplot [semithick, color0, mark=triangle*, mark size=3, mark options={solid}]
+table {%
+1 454
+5 460
+10 383
+15 265
+20 260
+25 209
+};
+\addplot [semithick, blue, mark=square*, mark size=3, mark options={solid}]
+table {%
+1 800
+5 538
+10 329
+15 303
+20 303
+25 303
+};
+\addplot [semithick, green!50.0!black, mark=*, mark size=3, mark options={solid}]
+table {%
+1 153
+5 86
+10 69
+15 60
+20 60
+25 60
+};
+\end{axis}
+
+\end{tikzpicture}
