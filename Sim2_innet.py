@@ -111,4 +111,6 @@ plt.legend()
 
 
 fig.tight_layout()
+from matplotlib2tikz import save as tikz_save
+tikz_save('in_net_rand.tex', figureheight='4cm', figurewidth='6cm')
 plt.show()

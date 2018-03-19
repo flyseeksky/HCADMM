@@ -117,6 +117,9 @@ plt.xlim([-5, 500])
 fig.tight_layout()
 plt.legend()
 
+from matplotlib2tikz import save as tikz_save
+tikz_save('g_acc_iter.tex', figureheight='4cm', figurewidth='6cm')
+
 #%%
 # accuracy vs communication
 fig = plt.figure(2, figsize=(8, 6))
@@ -133,4 +136,5 @@ plt.xlim([-1000, 80000])
 plt.legend()
 
 fig.tight_layout()
+tikz_save('g_acc_comm.tex', figureheight='4cm', figurewidth='6cm')
 plt.show()

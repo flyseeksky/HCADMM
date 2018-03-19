@@ -125,6 +125,8 @@ plt.xlabel('Number of local FCs')
 plt.tight_layout()
 plt.legend()
 
+from matplotlib2tikz import save
+save('tradeoff.tex', figureheight='4cm', figurewidth='6cm')
 #%%
 # accuracy vs communication
 #fig = plt.figure(2, figsize=(8, 6))

@@ -24,7 +24,7 @@ import networkx as nx
 # 1. graph
 n_nodes = 50     # number of nodes
 d = 1            # dimension of variable at each node
-np.random.seed(200)
+#np.random.seed(200)
 
 # 2. function
 # objective value
@@ -113,6 +113,9 @@ plt.xlim([-5, 500])
 plt.tight_layout()
 plt.legend()
 
+from matplotlib2tikz import save as tikz_save
+tikz_save('g_acc_iter2.tex', figureheight='4cm', figurewidth='6cm')
+
 #%%
 # accuracy vs communication
 fig = plt.figure(2, figsize=(8, 6))
@@ -129,4 +132,5 @@ plt.xlim([-1000, 80000])
 plt.legend()
 
 fig.tight_layout()
+tikz_save('g_acc_comm2.tex', figureheight='4cm', figurewidth='6cm')
 plt.show()
